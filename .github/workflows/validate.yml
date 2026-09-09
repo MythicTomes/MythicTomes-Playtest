@@ -3,6 +3,7 @@ name: Validate library
 on:
   pull_request:
     branches: [develop, main]
+    types: [opened, synchronize, reopened, edited]
   push:
     branches: [develop, main]
   workflow_dispatch:
