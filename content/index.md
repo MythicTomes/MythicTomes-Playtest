@@ -7,7 +7,7 @@ description: A public library of 5E-compatible homebrew.
 
 Author profiles identify the creator of each work and the terms that apply to it.
 
-- [[content/authors/Ekenwars/index|Ekenwars]]
+- [[authors/Ekenwars/index|Ekenwars]]
 
 ## Catalogues
 
