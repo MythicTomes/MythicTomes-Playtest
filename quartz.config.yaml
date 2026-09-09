@@ -72,6 +72,13 @@ plugins:
     layout:
       position: right
       priority: 30
+  - source: "@quartz-community/backlinks"
+    enabled: true
+    options:
+      hideWhenEmpty: true
+    layout:
+      position: right
+      priority: 40
   - source: "@quartz-community/crawl-links"
     enabled: true
     options:
@@ -178,10 +185,13 @@ plugins:
     enabled: true
     options:
       includeAll: false
+      collapsed: true
       includedProperties:
         - author
         - category
+        - subcategory
         - catalogues
+        - tags
         - version
         - licence
       excludedProperties: []
