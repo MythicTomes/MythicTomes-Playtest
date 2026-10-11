@@ -6,7 +6,7 @@ configuration:
   enablePopovers: true
   analytics: null
   locale: en-US
-  baseUrl: example.invalid
+  baseUrl: mythictomes-playtest.mythictomes.workers.dev
   ignorePatterns:
     - private
     - templates
