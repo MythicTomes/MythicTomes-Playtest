@@ -4,6 +4,7 @@ import {
   deriveMetadata,
   normaliseHeadings,
   outputPathFor,
+  publicFingerprint,
   renderAuthorIndex,
   rewriteLinks,
   splitFrontmatter,
@@ -158,5 +159,22 @@ test("renders grouped author index sections", () => {
   assert.match(
     out,
     /## Species\n\n<details>\n<summary>Show species<\/summary>\n\n- \[\[Ratfolk\|Ratfolk\]\]/,
+  )
+})
+
+test("fingerprint ignores bookkeeping lines but not content", () => {
+  const page = (date, commit, text) =>
+    `---\ntitle: A\nmodified: ${date}\nsource_commit: ${commit}\n---\n\n<!-- Generated from TheBigVaultOfDnD: a.md. -->\n\n${text}\n`
+  assert.equal(
+    publicFingerprint(page("2026-09-10", "aaa", "Body")),
+    publicFingerprint(page("2026-10-11", "bbb", "Body")),
+  )
+  assert.equal(
+    publicFingerprint("---\ntitle: A\n---\n\nBody\n"),
+    publicFingerprint(page("2026-10-11", "bbb", "Body")),
+  )
+  assert.notEqual(
+    publicFingerprint(page("2026-09-10", "aaa", "Body")),
+    publicFingerprint(page("2026-09-10", "aaa", "Body!")),
   )
 })

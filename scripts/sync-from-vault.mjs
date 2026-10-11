@@ -5,6 +5,9 @@
 //   npm run sync:vault -- --dry-run show what would change
 //   npm run sync:check              verify generated files were not hand-edited (no vault needed)
 //
+// A page's `modified` date is the publish date (today, or --date YYYY-MM-DD for the approval
+// date) when its public content changes, and is otherwise left as it was.
+//
 // The vault is the only place published works are edited. See vault-sync.config.yaml.
 
 import { createHash } from "node:crypto"
@@ -234,6 +237,24 @@ export function renderAuthorIndex(works, sections) {
 
 export const sha256 = (data) => createHash("sha256").update(data).digest("hex")
 
+/**
+ * What a reader sees on a page: everything except bookkeeping lines (date, source commit,
+ * generation notice). Two pages with the same fingerprint are the same publication.
+ */
+export function publicFingerprint(markdown) {
+  return markdown
+    .replace(/\r\n/g, "\n")
+    .split("\n")
+    .filter(
+      (line) =>
+        !/^(modified|source_commit): /.test(line) &&
+        !line.startsWith("<!-- Generated from TheBigVaultOfDnD"),
+    )
+    .join("\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim()
+}
+
 // ---------------------------------------------------------------------------
 // Filesystem / git
 // ---------------------------------------------------------------------------
@@ -255,13 +276,48 @@ function git(cwd, args) {
 
 function vaultRevision(vault, relativePath) {
   try {
-    const [commit, date] = git(vault, ["log", "-1", "--format=%H%x09%aI", "--", relativePath])
-      .trim()
-      .split("\t")
-    return commit ? { commit: commit.slice(0, 12), date: date.slice(0, 10) } : null
+    const commit = git(vault, ["log", "-1", "--format=%H", "--", relativePath]).trim()
+    return commit ? { commit: commit.slice(0, 12) } : null
   } catch {
     return null
   }
+}
+
+/**
+ * The `modified` date for a generated page: the publish date when readers will see a change,
+ * otherwise the page's existing date (or, for pages first published by hand, the date of
+ * the site commit that last changed them).
+ */
+async function publishedDate(output, rendered, publishDate) {
+  const absolute = path.join(repositoryRoot, output)
+  if (!existsSync(absolute)) return publishDate
+  const current = await readFile(absolute, "utf8")
+  if (publicFingerprint(current) !== publicFingerprint(rendered)) return publishDate
+  const existing = current.match(/^modified: (\S+)$/m)?.[1]
+  if (existing) return existing
+  return (await firstPublished(output, publicFingerprint(rendered))) ?? publishDate
+}
+
+/** Date of the oldest commit in the unbroken run of history where the page read the same. */
+async function firstPublished(output, fingerprint) {
+  let date = null
+  try {
+    const history = git(repositoryRoot, ["log", "--format=%H %cs", "--", output])
+    for (const line of history.trim().split("\n").filter(Boolean)) {
+      const [commit, commitDate] = line.split(" ")
+      const text = git(repositoryRoot, ["show", `${commit}:${output}`])
+      if (publicFingerprint(text) !== fingerprint) break
+      date = commitDate
+    }
+  } catch {
+    // Not committed yet, or the path was renamed: fall back to the publish date.
+  }
+  return date
+}
+
+function localDate(date = new Date()) {
+  const pad = (value) => String(value).padStart(2, "0")
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`
 }
 
 function dirtyPaths(vault) {
@@ -351,7 +407,7 @@ async function check(config) {
   )
 }
 
-async function sync(config, { vault, dryRun, allowDirty }) {
+async function sync(config, { vault, dryRun, allowDirty, publishDate }) {
   if (!existsSync(vault)) throw new Error(`Vault not found: ${vault} (use --vault or VAULT_DIR)`)
   const lock = await readLock(config)
   const files = await walk(vault, vault, config.ignoreFolders ?? [])
@@ -450,17 +506,20 @@ async function sync(config, { vault, dryRun, allowDirty }) {
     warnings.push(...linked.warnings.map((warning) => `${note.source}: ${warning}`))
     const frontmatter = {
       ...note.metadata,
-      modified: note.data.modified ?? revision?.date,
       source_commit: dirty?.has(note.source) ? "uncommitted" : (revision?.commit ?? "unknown"),
     }
-    if (!frontmatter.modified) delete frontmatter.modified
     const document = [
       `---\n${YAML.stringify(frontmatter).trim()}\n---`,
       `<!-- Generated from TheBigVaultOfDnD: ${note.source}. Edit the vault note, then run npm run sync:vault. -->`,
       normaliseHeadings(linked.body, note.metadata.title),
     ].join("\n\n")
     const absolute = path.join(repositoryRoot, note.output)
-    const formatted = await formatMarkdown(`${document}\n`, absolute)
+    const undated = await formatMarkdown(`${document}\n`, absolute)
+    const modified = note.data.modified ?? (await publishedDate(note.output, undated, publishDate))
+    const formatted = undated.replace(
+      /\nsource_commit: /,
+      `\nmodified: ${modified}\nsource_commit: `,
+    )
     plannedFiles[note.output] = {
       source: note.source,
       commit: frontmatter.source_commit,
@@ -573,7 +632,14 @@ async function main(argv) {
     repositoryRoot,
     valueOf("--vault") ?? process.env.VAULT_DIR ?? config.vault,
   )
-  return sync(config, { vault, dryRun: flag("--dry-run"), allowDirty: flag("--allow-dirty") })
+  const publishDate = valueOf("--date") ?? localDate()
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(publishDate)) throw new Error("--date must be YYYY-MM-DD")
+  return sync(config, {
+    vault,
+    dryRun: flag("--dry-run"),
+    allowDirty: flag("--allow-dirty"),
+    publishDate,
+  })
 }
 
 if (process.argv[1] === new URL(import.meta.url).pathname) {

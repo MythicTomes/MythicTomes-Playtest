@@ -4,17 +4,17 @@
     "content/authors/Ekenwars/Magic Items/Ashen Weapon.md": {
       "source": "Hongshan/Magic Items/Ashen Weapon.md",
       "commit": "147dc9b6a6ea",
-      "sha256": "6b4d4df95c1f4991ba03e5ed068ef1df90d7f111f3f0e53dc1e7351c8f8919e5"
+      "sha256": "9c4b4074ce5476ca79b7013faba3aa671099c143c457e8a4a62a8a1d69a2cb59"
     },
     "content/authors/Ekenwars/Rules and Mechanics/Fame and Reputation.md": {
       "source": "Hongshan/Rules and Mechanics/Fame and Reputation.md",
       "commit": "147dc9b6a6ea",
-      "sha256": "a81798473b1ce1683b338be87531ec3076dfdc82b9581d7673aa6a5b8a3a5691"
+      "sha256": "87aebce2801458cb7e85968dbadba54f5b1ad6f92c80ff81885fb2850cb181f3"
     },
     "content/authors/Ekenwars/Rules and Mechanics/Hongshan Weapons.md": {
       "source": "Hongshan/Rules and Mechanics/Hongshan Weapons.md",
       "commit": "147dc9b6a6ea",
-      "sha256": "865253b76f7d2edcd499fb5eb24806cd1a0df00e0e9e691f315b863fdd2f9c04"
+      "sha256": "4082344aa21d9bc35fa76b7fdf5190e14b7297dedbe10a3720142b5757de31e0"
     },
     "content/authors/Ekenwars/Rules and Mechanics/Hunting and Foraging Rules.md": {
       "source": "Hongshan/Rules and Mechanics/Hunting and Foraging Rules.md",
@@ -29,12 +29,12 @@
     "content/authors/Ekenwars/Rules and Mechanics/Settlement Rules and Lifestyle.md": {
       "source": "Hongshan/Rules and Mechanics/Settlement Rules and Lifestyle.md",
       "commit": "147dc9b6a6ea",
-      "sha256": "f96fbfa6b274f0c1f506b52ab48d853276c777766e76b3252683aecabb08f8b0"
+      "sha256": "d16cd0732476cdb6e0dfd6ce03c2eefa36c9a814d5806e10f9550a7f1c19a607"
     },
     "content/authors/Ekenwars/Rules and Mechanics/Survival Gear.md": {
       "source": "Hongshan/Rules and Mechanics/Survival Gear.md",
       "commit": "147dc9b6a6ea",
-      "sha256": "3641668d43a5618dbfd0d5ef5852a5e589411ec18f5a313ce6218ed3181afdd0"
+      "sha256": "cf2c83f875a685670a7e72dcaa6a1c11d05edb5c284cd6497fe6df78204a890b"
     },
     "content/authors/Ekenwars/Rules and Mechanics/Weather and Encounters.md": {
       "source": "Hongshan/Rules and Mechanics/Weather and Encounters.md",
@@ -44,62 +44,62 @@
     "content/authors/Ekenwars/Species/Bovari (Oxfolk).md": {
       "source": "Homebrew Vault/Races/Bovari (Oxfolk).md",
       "commit": "147dc9b6a6ea",
-      "sha256": "1b8c18f104636c2f4fa383374532aac511843d7b07a4e2a1ffc2f115c6028e40"
+      "sha256": "77c178a46d73c9ba73195fbcd899cfb6600906a9d2f97ac8f4a3775cf7e9a4ac"
     },
     "content/authors/Ekenwars/Species/Gallian (Horsefolk).md": {
       "source": "Homebrew Vault/Races/Gallian (Horsefolk).md",
       "commit": "147dc9b6a6ea",
-      "sha256": "10e737fffa73c1f7fce3d9074879c05c16e617d8517614be3d99a17b9082b25b"
+      "sha256": "3f2a40b162d4bf3c70b5fc344be287a94cc4a606c25c4573e7e83689cdd95dbb"
     },
     "content/authors/Ekenwars/Species/Gouren (Houndfolk).md": {
       "source": "Homebrew Vault/Races/Gouren (Houndfolk).md",
       "commit": "147dc9b6a6ea",
-      "sha256": "08b15d03ba1567f46b8a1ee65f168344497eda5fa562049085635555821e3175"
+      "sha256": "0e68b2056815f92fc4444df6634eb438a1d2f6f6c29b1a680f51dd0efafa38e1"
     },
     "content/authors/Ekenwars/Species/Longren (Dragonfolk).md": {
       "source": "Homebrew Vault/Races/Longren (Dragonfolk).md",
       "commit": "147dc9b6a6ea",
-      "sha256": "b0d641333a42220c4909d8d5e3f7d5463da7a2d0ea711abdd1e6298b6024abb3"
+      "sha256": "af00643e31e24da4d41ff48ab6d78a1ea97b17ad434f6fec6f5f899665ffb13b"
     },
     "content/authors/Ekenwars/Species/Nagarai (Snakefolk).md": {
       "source": "Homebrew Vault/Races/Nagarai (Snakefolk).md",
       "commit": "147dc9b6a6ea",
-      "sha256": "16625ddd7368140e13626e399c84a98fbb9e304407681808913d579800a418dd"
+      "sha256": "1665b2dcb73b6b633945c069669c25d7681d6c12a7e61452fc936f016813e662"
     },
     "content/authors/Ekenwars/Species/Phantomling.md": {
       "source": "Homebrew Vault/Races/Phantomling.md",
       "commit": "147dc9b6a6ea",
-      "sha256": "59b8961d3af5c823454f7d748d3a36a0bfe99b71bf3cd0bc18e8a63381180608"
+      "sha256": "75cc35f2a96ee864a893130e9223b4fb0a8c9f12d20d1b4be68577b2adb941e6"
     },
     "content/authors/Ekenwars/Species/Qilinborn.md": {
       "source": "Homebrew Vault/Races/Qilinborn.md",
       "commit": "147dc9b6a6ea",
-      "sha256": "9fb2920c89277e2589d3da5485af4f82c9684ab6ee0787d7b4455dd63a636612"
+      "sha256": "88031836ae307f5f83feb33f28bd72e7b27f6042653f4858afd08b59d019b525"
     },
     "content/authors/Ekenwars/Species/Rajani (Tigerfolk).md": {
       "source": "Homebrew Vault/Races/Rajani (Tigerfolk).md",
       "commit": "147dc9b6a6ea",
-      "sha256": "5dc69a64f7fc68ac60d0cf141facd8b20087de420a9e9f3bf46a30702f6072da"
+      "sha256": "cf981c01a41a9474232855ad003f3455be8f181acc9b688830662d6c73a868a4"
     },
     "content/authors/Ekenwars/Species/Ratfolk.md": {
       "source": "Homebrew Vault/Races/Ratfolk.md",
       "commit": "147dc9b6a6ea",
-      "sha256": "4c78063c7e12e92230dcda3e545686be4c66dea8526eaf9cdc97c05f11fef90c"
+      "sha256": "419a5d16338aecad8429b1122a8969e5e24f2ee25bac38437f12fd51c602a209"
     },
     "content/authors/Ekenwars/Species/Shanyang (Goatfolk).md": {
       "source": "Homebrew Vault/Races/Shanyang (Goatfolk).md",
       "commit": "147dc9b6a6ea",
-      "sha256": "8880bea4958cd85cd9746ee4d26e7ef1def24fc13464865592d2085e53d23c2d"
+      "sha256": "a6373baad2d932b5765cd41c3bacdb28224660c97868dd2ee8150379f7c36a8a"
     },
     "content/authors/Ekenwars/Species/Swinekin (Pigfolk).md": {
       "source": "Homebrew Vault/Races/Swinekin (Pigfolk).md",
       "commit": "147dc9b6a6ea",
-      "sha256": "eb2ff668328f8d66a3ba88f443e877e319271c1257d45976d2c2573e2eb75844"
+      "sha256": "3b51a7a65fd8310c1578584c33840e85dee89bd332bb4c172ea0c3db457f30bc"
     },
     "content/authors/Ekenwars/Species/Thallari.md": {
       "source": "Homebrew Vault/Races/Thallari.md",
       "commit": "147dc9b6a6ea",
-      "sha256": "54acfca222e2cc738181504f98223ef4bf23bd61b1b2bc587f3d03b5937c5017"
+      "sha256": "0ca4cd5e23ca00ac0cada1329c5250491d692df7fc8b275dbc153f2d2c734e38"
     },
     "content/authors/Ekenwars/Species/Ursaline (Bearfolk).md": {
       "source": "Homebrew Vault/Races/Ursaline (Bearfolk).md",
@@ -109,37 +109,37 @@
     "content/authors/Ekenwars/Species/Vesperi (Batfolk).md": {
       "source": "Homebrew Vault/Races/Vesperi (Batfolk).md",
       "commit": "147dc9b6a6ea",
-      "sha256": "01c6897e9a156c53ef0e7698358401704402b2f4cda3e42e30e4bb145ceba61d"
+      "sha256": "72d69494891fd961470d8c8f435e6d7e0b82d5b500ee81019df9fb40370a4dd4"
     },
     "content/authors/Ekenwars/Species/Yakshavira.md": {
       "source": "Homebrew Vault/Races/Yakshavira.md",
       "commit": "147dc9b6a6ea",
-      "sha256": "0790aa86e06e7817d4d4f35c1a83c6dea5cbf72f842eb245e107c42c44297c09"
+      "sha256": "a077d8aff5d5e21fb0a1258bb372737ad4a62acf6d600a34713963f501744cd9"
     },
     "content/authors/Ekenwars/Species/Yanmao (Fowlfolk).md": {
       "source": "Homebrew Vault/Races/Yanmao (Fowlfolk).md",
       "commit": "147dc9b6a6ea",
-      "sha256": "472abc191c8bc8572b857649627808e35194f60b7e0c389adaf768681311d926"
+      "sha256": "d521428232e378ccf20ecbf9302c3696cfa3baaccc9ff0bcf58f62d979157ce4"
     },
     "content/authors/Ekenwars/Species/Yaozi (Yaoguai-born).md": {
       "source": "Homebrew Vault/Races/Yaozi (Yaoguai-born).md",
       "commit": "147dc9b6a6ea",
-      "sha256": "c80421acbc8f611148f1536a15e184184be6ee6e572ae74bd429a35892cf8cb1"
+      "sha256": "f004f2ee0264d72af435c3b377e32e173191bfec8e2347a6450616a4ffb5ac1b"
     },
     "content/authors/Ekenwars/Subclasses/Barbarian/Path of the Warlord.md": {
       "source": "Homebrew Vault/Subclasses/Barbarian/Path of the Warlord.md",
       "commit": "147dc9b6a6ea",
-      "sha256": "13ae37a800538a226cd0b9bb4992a96c45912279d2a7723e2dedf5923578c280"
+      "sha256": "72bff4a2fec20496205019dc271c7ff2f81ebe8d7021198cdf4246bf6589c53f"
     },
     "content/authors/Ekenwars/Subclasses/Druid/Circle of the Earthen Cycle.md": {
       "source": "Homebrew Vault/Subclasses/Druid/Circle of the Earthen Cycle.md",
       "commit": "147dc9b6a6ea",
-      "sha256": "af8c6b9a5215f960a4b1e56b9dd511394e7d1e3837c21220a60afb305f752cff"
+      "sha256": "9c80793034e5cc6281b49da6c3741ba6899f812c053c1cf998f75dcc979a6f63"
     },
     "content/authors/Ekenwars/Subclasses/Fighter/Weapon Master.md": {
       "source": "Homebrew Vault/Subclasses/Fighter/Weapon Master.md",
       "commit": "147dc9b6a6ea",
-      "sha256": "0efa8afa315adf427d0f37c53e51e6b861842fd2bd29252a00e1bfb8a54dfae3"
+      "sha256": "f441ab1db5f80f14cee746b9936bf373707a2ffedf5a77e9b9a8695ca9000cc2"
     },
     "content/authors/Ekenwars/Subclasses/Monk/Way of the Bestial Art.md": {
       "source": "Homebrew Vault/Subclasses/Monk/Way of the Bestial Art.md",
@@ -154,22 +154,22 @@
     "content/authors/Ekenwars/Subclasses/Paladin/Oath of Karma.md": {
       "source": "Homebrew Vault/Subclasses/Paladin/Oath of Karma.md",
       "commit": "147dc9b6a6ea",
-      "sha256": "a94090fec1bb23ec76e353d134ab74f8c72fd4b029c70db2fd8c250868ee7833"
+      "sha256": "a9fd01ed1c30256aee096a0e445083bab56ed8fdc1dde83fc530cb1fdf839610"
     },
     "content/authors/Ekenwars/Subclasses/Ranger/Lone Ranger.md": {
       "source": "Homebrew Vault/Subclasses/Ranger/Lone Ranger.md",
       "commit": "147dc9b6a6ea",
-      "sha256": "97ebd01aacb4285bc8a63154192f80a42e9b0e605b0c9174495f78e93f239965"
+      "sha256": "fdbc84c79dc6e1a8e22bd7b902b197cecc0a384bfe7f56dab20889c6fcfc0202"
     },
     "content/authors/Ekenwars/Subclasses/Rogue/Diffuser.md": {
       "source": "Homebrew Vault/Subclasses/Rogue/Diffuser.md",
       "commit": "147dc9b6a6ea",
-      "sha256": "480312d4ed9ebda48055455694fdcb3891d98babedfd18bf568e59070cfbf372"
+      "sha256": "58a0a280fda1979895664f487563abf813c9992d9cab29ccbd834c42fb8c63d6"
     },
     "content/authors/Ekenwars/Subclasses/Rogue/Flow Breaker.md": {
       "source": "Homebrew Vault/Subclasses/Rogue/Flow Breaker.md",
       "commit": "147dc9b6a6ea",
-      "sha256": "84300209bb2cd2c55336c9b50c0b325b9d8bd4631f4fa443190199ca6602dc18"
+      "sha256": "a2774cca97863b71c7e41ea47ba222a023bdee5c054aba0c3f24799f0d1aab8f"
     },
     "content/authors/Ekenwars/Subclasses/Sorcerer/Yaksha Sorcery.md": {
       "source": "Homebrew Vault/Subclasses/Sorcerer/Yaksha Sorcery.md",
@@ -179,12 +179,12 @@
     "content/authors/Ekenwars/Subclasses/Warlock/Ancestry Patron.md": {
       "source": "Homebrew Vault/Subclasses/Warlock/Ancestry Patron.md",
       "commit": "147dc9b6a6ea",
-      "sha256": "7079aeda5245e777ebdddabab77c295c9795c39a58324c07bf7025baabd27996"
+      "sha256": "d8df238dda4179eead6a5f1aaaf6afce091e8470b6fb7c42a83faf81c76010ca"
     },
     "content/authors/Ekenwars/Subclasses/Wizard/Calligrapher.md": {
       "source": "Homebrew Vault/Subclasses/Wizard/Calligrapher.md",
       "commit": "147dc9b6a6ea",
-      "sha256": "269ef3c9e5c43a5d568c6d50fa6f031435cc19a875691e44fa30a4832c92eb6e"
+      "sha256": "8c47d8432bb06ce5ac2092e5820a9263cd37113469f1e2f63dd7948a3c25df56"
     },
     "content/catalogues/Hongshan Playtest.md": {
       "source": "Homebrew Vault/Hongshan Playtest Catalogue.md",
