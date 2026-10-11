@@ -8,6 +8,8 @@ description: Browse public playtest material attributed to Ekenwars.
 
 Browse public playtest material attributed to [[authors/Ekenwars/index|Ekenwars]]. Return to the [[playtests/index|Playtest Library]] to browse all contributing authors.
 
+<!-- vault-sync:works:start -->
+
 ## Magic Items
 
 ### Uncommon
@@ -27,10 +29,10 @@ Browse public playtest material attributed to [[authors/Ekenwars/index|Ekenwars]
 <summary>Show general rules and mechanics</summary>
 
 - [[Fame and Reputation|Fame and Reputation]]
-- [[Survival Gear|Survival Gear]]
-- [[Weather and Encounters|Weather and Encounters]]
 - [[Hunting and Foraging Rules|Hunting and Foraging Rules]]
 - [[Settlement Rules and Lifestyle|Settlement Rules and Lifestyle]]
+- [[Survival Gear|Survival Gear]]
+- [[Weather and Encounters|Weather and Encounters]]
 
 </details>
 
@@ -39,8 +41,8 @@ Browse public playtest material attributed to [[authors/Ekenwars/index|Ekenwars]
 <details>
 <summary>Show Hongshan rules and mechanics</summary>
 
-- [[Musou Techniques|Musou Techniques]]
 - [[Hongshan Weapons|Hongshan Weapon Expansion]]
+- [[Musou Techniques|Musou Techniques]]
 
 </details>
 
@@ -162,3 +164,5 @@ Browse public playtest material attributed to [[authors/Ekenwars/index|Ekenwars]
 - [[Calligrapher|Calligrapher]]
 
 </details>
+
+<!-- vault-sync:works:end -->

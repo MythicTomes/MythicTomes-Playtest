@@ -9,9 +9,13 @@ tags:
   - hongshan
   - species
   - legacy-species
+modified: 2026-10-11
+source_commit: 147dc9b6a6ea
 ---
 
-## Ursaline
+<!-- Generated from TheBigVaultOfDnD: Homebrew Vault/Races/Ursaline (Bearfolk).md. Edit the vault note, then run npm run sync:vault. -->
+
+## Ursaline (Bearfolk)
 
 Ursalines are powerful, solitary creatures who embody the strength and resilience of the great bears they resemble. They value solitude, self-reliance, and balance, often living in harmony with the wilderness. Calm and composed by nature, Ursalines can become an unstoppable force of fury when provoked, defending themselves and their territory with savage might.
 

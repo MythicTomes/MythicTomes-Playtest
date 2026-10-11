@@ -9,7 +9,11 @@ tags:
   - hongshan
   - subclass
   - druid
+modified: 2026-10-11
+source_commit: 147dc9b6a6ea
 ---
+
+<!-- Generated from TheBigVaultOfDnD: Homebrew Vault/Subclasses/Druid/Circle of the Earthen Cycle.md. Edit the vault note, then run npm run sync:vault. -->
 
 ## Circle of the Earthen Cycle
 

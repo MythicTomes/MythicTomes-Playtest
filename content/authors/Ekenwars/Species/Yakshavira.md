@@ -9,7 +9,11 @@ tags:
   - hongshan
   - species
   - legacy-species
+modified: 2026-10-11
+source_commit: 147dc9b6a6ea
 ---
+
+<!-- Generated from TheBigVaultOfDnD: Homebrew Vault/Races/Yakshavira.md. Edit the vault note, then run npm run sync:vault. -->
 
 ## Yakshavira
 

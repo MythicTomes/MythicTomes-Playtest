@@ -12,8 +12,10 @@
   },
   "scripts": {
     "validate:public": "node scripts/validate-public.mjs",
+    "sync:vault": "node scripts/sync-from-vault.mjs",
+    "sync:check": "node scripts/sync-from-vault.mjs --check",
     "build:portal": "npm run validate:public && npx quartz build",
-    "check:portal": "npm run validate:public && npm run check && npm test && npx quartz build",
+    "check:portal": "npm run validate:public && npm run sync:check && npm run check && npm test && npx quartz build",
     "quartz": "./quartz/bootstrap-cli.mjs",
     "check": "tsc --noEmit && npx prettier . --check",
     "format": "npx prettier . --write",

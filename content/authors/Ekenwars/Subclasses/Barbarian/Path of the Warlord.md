@@ -9,7 +9,11 @@ tags:
   - hongshan
   - subclass
   - barbarian
+modified: 2026-10-11
+source_commit: 147dc9b6a6ea
 ---
+
+<!-- Generated from TheBigVaultOfDnD: Homebrew Vault/Subclasses/Barbarian/Path of the Warlord.md. Edit the vault note, then run npm run sync:vault. -->
 
 ## Path of the Warlord
 

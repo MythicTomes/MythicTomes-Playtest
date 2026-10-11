@@ -9,11 +9,15 @@ tags:
   - hongshan
   - rules-and-mechanics
   - general
+modified: 2026-10-11
+source_commit: 147dc9b6a6ea
 ---
+
+<!-- Generated from TheBigVaultOfDnD: Hongshan/Rules and Mechanics/Weather and Encounters.md. Edit the vault note, then run npm run sync:vault. -->
 
 ## Weather and Encounters
 
-Use these rules when running wilderness travel, weather, and improvised travel encounters. Area-specific files, such as [[White Gate Travel]], provide the tables.
+Use these rules when running wilderness travel, weather, and improvised travel encounters. Area-specific files, such as White Gate Travel, provide the tables.
 
 ### Travel Day Procedure
 

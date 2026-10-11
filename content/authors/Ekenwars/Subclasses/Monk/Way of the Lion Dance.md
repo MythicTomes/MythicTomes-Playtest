@@ -9,17 +9,21 @@ tags:
   - hongshan
   - subclass
   - monk
+modified: 2026-10-11
+source_commit: 147dc9b6a6ea
 ---
 
-### Way of the Lion Dance
+<!-- Generated from TheBigVaultOfDnD: Homebrew Vault/Subclasses/Monk/Way of the Lion Dance.md. Edit the vault note, then run npm run sync:vault. -->
+
+## Way of the Lion Dance
 
 Lion Dance Monks embody the spirit of celebration, courage, and living motion, transforming martial arts into a breathtaking performance of strength and agility. Drawing inspiration from traditional lion dances, they weave acrobatics, rhythm, and ferocity into combat, leaping across the battlefield with flowing grace and explosive force.
 
-#### Level 3: Performer of the Lion
+### Level 3: Performer of the Lion
 
 You gain proficiency in the Performance skill. You can use Dexterity instead of Charisma for Performance checks involving dance, and you have advantage on such checks.
 
-#### Level 3: Leaping Strike
+### Level 3: Leaping Strike
 
 Your acrobatic movements allow you to strike with explosive momentum.
 

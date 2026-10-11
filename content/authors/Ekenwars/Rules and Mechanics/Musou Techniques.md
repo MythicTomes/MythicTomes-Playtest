@@ -9,7 +9,11 @@ tags:
   - hongshan
   - rules-and-mechanics
   - hongshan-rules
+modified: 2026-10-11
+source_commit: 147dc9b6a6ea
 ---
+
+<!-- Generated from TheBigVaultOfDnD: Hongshan/Rules and Mechanics/Musou Techniques.md. Edit the vault note, then run npm run sync:vault. -->
 
 ## Musou Techniques (Optional Rule)
 
@@ -39,43 +43,43 @@ When a feat or class feature grants you a **Weapon Mastery**, you can instead ch
 
 **Limited Uses.** You can use Musou Techniques a number of times equal to your Proficiency Bonus, regaining all expended uses when you finish a Short or Long Rest.
 
-## Musou Technique Properties
+### Musou Technique Properties
 
-### Sweep
+#### Sweep
 
 You strike in a wide arc, hitting multiple enemies in front of you. Each creature in a 15-foot-wide, 10-foot-long area in front of you is affected. If the weapon used for this technique has Reach, the area is 15 feet wide and 15 feet long instead. Make one weapon attack roll and compare the result against the AC of each creature in the area. On a hit, a creature takes damage equal to the weapon die, and it must succeed on a Strength saving throw or fall prone.
 
-### Pierce
+#### Pierce
 
 You launch a penetrating strike, hitting multiple enemies in a straight line. Each creature in a 5-foot-wide line is affected. The line extends a number of feet equal to 5 times the Strength or Dexterity modifier used for the attack (minimum of 5 feet). Make one weapon attack roll and compare the result against the AC of each creature in the area. On a hit, a creature takes damage equal to the weapon die. If your attack roll exceeds a creature's AC by 5 or more, that creature takes one additional weapon die of damage.
 
-### Crush
+#### Crush
 
 You strike the ground or your surroundings with force, creating a shockwave that impacts nearby creatures. Each other creature in a 10-foot-radius area centered on a point within your reach must make a Dexterity saving throw. Creatures of your choice in the area have advantage on this save. On a failed save, a creature takes damage equal to the weapon die. On a success, a creature takes half as much damage.
 
-### Volley
+#### Volley
 
 You fire or throw projectiles in rapid succession at multiple targets. Choose up to a number of creatures equal to your proficiency bonus within your weapon's range. Each chosen creature must be within 15 feet of at least one other chosen creature. Make a number of weapon attacks equal to your Strength or Dexterity modifier, up to a maximum of 5. You can divide these attacks among the chosen creatures as you wish. Each hit deals damage equal to the weapon die.
 
-### Spin
+#### Spin
 
 You whirl your weapon in a tight arc, striking every creature around you. Each creature of your choice within your weapon's reach is affected. Make one weapon attack roll and compare the result against the AC of each affected creature. On a hit, a creature takes damage equal to the weapon die + your ability modifier.
 
-### Rapid Strike
+#### Rapid Strike
 
 You unleash a flurry of fast, precise blows. Choose one creature within your reach. Make a number of weapon attacks against that creature equal to 1 + half your proficiency bonus, rounded up. You gain a +2 bonus to attack rolls made for these attacks. Each hit deals damage equal to the weapon die. On-hit effects and additional damage triggered by a hit apply to each hit as normal, expending any required resources separately for each one.
 
-### Bounce
+#### Bounce
 
 You hurl or loose your weapon so that it ricochets between multiple foes. Choose one creature within the weapon’s normal range. On a hit, the attack can bounce to another creature of your choice within 15 feet of the previous target. The attack can bounce a maximum number of times equal to half your proficiency bonus, rounded up. The bounce continues in this manner until the end of your turn, until there are no valid targets remaining, or until the attack misses, at which point it falls to the ground within 5 feet of the last target. Use the same attack roll for each target after the first. On a hit, a creature takes damage equal to the weapon die + your ability modifier. You roll damage once and apply it to each creature hit.
 
 You can choose yourself as the target of a bounce. When you are the next target, the weapon returns to your hand and you catch it automatically instead of taking damage.
 
-### Displace
+#### Displace
 
 You strike in a sweeping arc. Choose a number of creatures up to your proficiency bonus within your weapon's reach. Make one weapon attack roll and compare the result against the AC of each chosen creature. On a hit, a creature takes damage equal to the weapon die. A creature hit by this technique must then succeed on a Strength saving throw or you move it to another space within your weapon's reach of you.
 
-## Example in Play
+### Example in Play
 
 A fighter wielding a glaive is surrounded by several enemies and uses the Sweep technique. The player rolls one attack and compares the result against each creature’s AC in the area. Three creatures are hit and one is missed. The fighter rolls the weapon damage once and applies the result to each creature hit. Each creature hit must also make a Strength saving throw or fall prone.
 
@@ -83,7 +87,7 @@ A ranger using a spear lines up multiple enemies in a corridor and uses Pierce. 
 
 A barbarian wielding a warhammer uses Crush, forcing nearby enemies to make Dexterity saving throws. Two creatures fail and take damage equal to the weapon die, while another succeeds and takes half as much damage.
 
-## Weapons Table
+### Weapons Table
 
 | Name                       | Damage          | Properties                                       | Mastery | Musou Technique | Cost  |
 | -------------------------- | --------------- | ------------------------------------------------ | ------- | --------------- | ----- |
@@ -128,16 +132,16 @@ A barbarian wielding a warhammer uses Crush, forcing nearby enemies to make Dext
 | Heavy Crossbow             | 1d10 Piercing   | Ammunition (100/400), Heavy, Loading, Two-Handed | Push    | Pierce          | 50 gp |
 | Longbow                    | 1d8 Piercing    | Ammunition (150/600), Heavy, Two-Handed          | Slow    | Volley          | 50 gp |
 
-### Musou Feats
+#### Musou Feats
 
-#### Unarmed Fighter
+##### Unarmed Fighter
 
 - **Ability Score Increase.** Increase your Strength or Dexterity by 1, to a maximum of 20.
 - **Improved Unarmed Strikes.** Your Unarmed Strikes are considered weapons for the purposes of weapon masteries and Musou Techniques, and they deal 1d6 bludgeoning damage unless they already deal higher damage.
 - **Unarmed Combatant.** If a feature allows you to use a weapon mastery with your Unarmed Strikes, they use the Sap mastery.
 - **Unarmed Musou.** You learn the Rapid Strike Musou Technique. If a feat allows you to use Unarmed Strikes as weapon attacks for the purposes of Musou Techniques, your Unarmed Strikes use the Rapid Strike Musou Technique.
 
-#### Musou Apprentice
+##### Musou Apprentice
 
 _Requirement: Level 5+_
 
@@ -145,7 +149,7 @@ _Requirement: Level 5+_
 - **Musou Technique.** You learn one Musou Technique of your choice. The technique must be one associated with a weapon with which you have proficiency.
 - Once per Short or Long Rest, you can use a Musou Technique without expending one of your Musou Technique uses.
 
-#### Musou Striker
+##### Musou Striker
 
 _Requirement: Level 5+, Musou Technique feature_
 
@@ -153,7 +157,7 @@ _Requirement: Level 5+, Musou Technique feature_
 - **Precise Technique.** You gain a +2 bonus to attack rolls made as part of a Musou Technique.
 - **Exploit Opening.** When you roll damage for a Musou Technique, you can add your attack modifier to the damage roll.
 
-#### Musou Breaker
+##### Musou Breaker
 
 _Requirement: Level 5+, Musou Technique feature_
 
@@ -161,14 +165,14 @@ _Requirement: Level 5+, Musou Technique feature_
 - **Overwhelming Technique.** Your Musou save DC increases by 1.
 - **Relentless.** When you use a Musou Technique that forces creatures to make a saving throw, you can choose a number of those creatures up to your proficiency bonus. Those creatures have disadvantage on the saving throw. You can use this feature a number of times equal to your proficiency bonus. You regain one expended use when you finish a Short Rest, and all expended uses when you finish a Long Rest.
 
-#### Musou Vanguard
+##### Musou Vanguard
 
 _Requirement: Level 5+, Musou Technique feature_
 
 - **Ability Score Increase.** Increase your Strength by 1, to a maximum of 20.
 - **Battlefield Technique.** When you perform a Musou Technique while wielding a weapon with the Heavy and Two-Handed properties, you can replace that technique with Sweep, Spin, or Crush for that use.
 
-#### Musou Marksman
+##### Musou Marksman
 
 _Requirement: Level 5+, Musou Technique feature_
 

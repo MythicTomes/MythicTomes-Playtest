@@ -9,7 +9,11 @@ tags:
   - hongshan
   - rules-and-mechanics
   - hongshan-rules
+modified: 2026-10-11
+source_commit: 147dc9b6a6ea
 ---
+
+<!-- Generated from TheBigVaultOfDnD: Hongshan/Rules and Mechanics/Hongshan Weapons.md. Edit the vault note, then run npm run sync:vault. -->
 
 ## Hongshan Weapon Expansion
 

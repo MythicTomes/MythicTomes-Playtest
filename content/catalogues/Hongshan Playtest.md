@@ -7,21 +7,25 @@ tags:
   - hongshan
   - catalogue
   - playtest
+modified: 2026-10-11
+source_commit: 147dc9b6a6ea
 ---
 
-# Hongshan Playtest Catalogue
+<!-- Generated from TheBigVaultOfDnD: Homebrew Vault/Hongshan Playtest Catalogue.md. Edit the vault note, then run npm run sync:vault. -->
+
+## Hongshan Playtest Catalogue
 
 These homebrew rules are presented for playtesting. They are provisional and may change in response to playtest feedback.
 
 Catalogue inclusion indicates that the rules text is ready for testing. Embedded art remains subject to separate provenance and publication approval.
 
-## Rules Baselines
+### Rules Baselines
 
 - The subclasses use the 2024 subclass level progression.
 - The species currently use a legacy-style ancestry framework that includes Ability Score Increases for 2014 compatibility. Use the ability scores provided by background origin if using the 2024 rule set.
 - Musou Techniques and the Hongshan Weapon Expansion use the 2024 Weapon Mastery rules.
 
-## Species
+### Species
 
 <!-- prettier-ignore -->
 | Species                                              | Description                                                      |
@@ -44,7 +48,7 @@ Catalogue inclusion indicates that the rules text is ready for testing. Embedded
 | [[Yanmao (Fowlfolk)\|Yanmao (Fowlfolk)]] | Land-bird folk choose a lineage centered on commanding calls, display, speed, or balance.           |
 | [[Yaozi (Yaoguai-born)\|Yaozi (Yaoguai-born)]] | Curse-touched Yaozi frighten nearby creatures, resist curses, and alter their appearance.                |
 
-## Subclasses
+### Subclasses
 
 <!-- prettier-ignore -->
 | Class     | Subclass                                                             | Description                                                         |
@@ -62,14 +66,14 @@ Catalogue inclusion indicates that the rules text is ready for testing. Embedded
 | Warlock   | [[Ancestry Patron\|Ancestry Patron]] | A warlock aided by ancestral spirits that guide rolls, guard allies, and prevent death.                |
 | Wizard    | [[Calligrapher\|Calligrapher]] | A wizard who inscribes prepared spells into portable scripts for flexible casting.                     |
 
-## Magic Items
+### Magic Items
 
 <!-- prettier-ignore -->
 | Item                                             | Description                                                 |
 | ------------------------------------------------ | -------------------------------------------------------------- |
 | [[Ashen Weapon\|Ashen Weapon]] | An uncommon weapon coated in blessed ash that deals extra damage to Fey, Fiends, and Undead. |
 
-## Optional Mechanics
+### Optional Mechanics
 
 <!-- prettier-ignore -->
 | Rule                                                                       | Description                                                          |
@@ -82,6 +86,6 @@ Catalogue inclusion indicates that the rules text is ready for testing. Embedded
 | [[Survival Gear\|Survival Gear]] | Equip wilderness camps with practical gear that protects travelers from weather and environmental hazards.          |
 | [[Weather and Encounters\|Weather and Encounters]] | Run wilderness journeys with travel pace, weather pressure, camp procedures, and improvised encounters.     |
 
-## Useful Playtest Feedback
+### Useful Playtest Feedback
 
 When reporting feedback, include the option used, character level, party size, encounter or scene, and the rule interaction that mattered. Note whether a feature was too strong, too weak, unclear, difficult to remember, or simply not fun to use. Have fun!

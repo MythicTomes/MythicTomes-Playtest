@@ -1,0 +1,584 @@
+#!/usr/bin/env node
+// Generates public library pages from TheBigVaultOfDnD.
+//
+//   npm run sync:vault              write content/ from the vault
+//   npm run sync:vault -- --dry-run show what would change
+//   npm run sync:check              verify generated files were not hand-edited (no vault needed)
+//
+// The vault is the only place published works are edited. See vault-sync.config.yaml.
+
+import { createHash } from "node:crypto"
+import { execFileSync } from "node:child_process"
+import { copyFile, mkdir, readFile, readdir, rm, rmdir, writeFile } from "node:fs/promises"
+import { existsSync } from "node:fs"
+import path from "node:path"
+import process from "node:process"
+import YAML from "yaml"
+
+const IMAGE_EXTENSIONS = new Set([".gif", ".jpeg", ".jpg", ".png", ".svg", ".webp"])
+const INDEX_START = "<!-- vault-sync:works:start -->"
+const INDEX_END = "<!-- vault-sync:works:end -->"
+const PASSTHROUGH_FIELDS = ["description", "version", "licence", "copyright"]
+
+const repositoryRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), "..")
+const contentRoot = path.join(repositoryRoot, "content")
+
+// ---------------------------------------------------------------------------
+// Pure helpers (exported for tests)
+// ---------------------------------------------------------------------------
+
+export function slug(value) {
+  return String(value)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+}
+
+export function splitFrontmatter(markdown) {
+  const text = markdown.replace(/\r\n/g, "\n")
+  if (!text.startsWith("---\n")) return { data: {}, body: text }
+  const end = text.indexOf("\n---", 4)
+  if (end === -1) return { data: {}, body: text }
+  const after = text.indexOf("\n", end + 4)
+  return {
+    data: YAML.parse(text.slice(4, end)) ?? {},
+    body: after === -1 ? "" : text.slice(after + 1),
+  }
+}
+
+/** Splits Markdown into alternating prose / fenced-code segments so code is never rewritten. */
+export function segments(body) {
+  const output = []
+  let fence = null
+  let buffer = []
+  const flush = (code) => {
+    if (buffer.length) output.push({ code, text: buffer.join("\n") })
+    buffer = []
+  }
+  for (const line of body.split("\n")) {
+    const marker = line.match(/^\s*(`{3,}|~{3,})/)
+    if (!fence && marker) {
+      flush(false)
+      fence = marker[1]
+      buffer.push(line)
+    } else if (fence && line.trim().startsWith(fence)) {
+      buffer.push(line)
+      flush(true)
+      fence = null
+    } else buffer.push(line)
+  }
+  flush(Boolean(fence))
+  return output
+}
+
+const joinSegments = (parts) => parts.map((part) => part.text).join("\n")
+const mapProse = (body, transform) =>
+  joinSegments(
+    segments(body).map((part) => (part.code ? part : { ...part, text: transform(part.text) })),
+  )
+
+/** Removes Obsidian %%comments%%, which are private author notes. */
+export function stripComments(body) {
+  return mapProse(body, (text) => text.replace(/%%[\s\S]*?%%/g, ""))
+}
+
+/**
+ * Normalises heading depth for Quartz, which renders the page title as the H1.
+ * The work's own title becomes an H2: an existing leading heading is promoted to H2, or
+ * `## {title}` is inserted when the note starts with prose. Other headings keep their
+ * relative depth beneath it.
+ */
+export function normaliseHeadings(body, title) {
+  const parts = segments(body.trim())
+  const levels = parts
+    .filter((part) => !part.code)
+    .flatMap((part) => [...part.text.matchAll(/^(#{1,6})\s/gm)].map((match) => match[1].length))
+  const firstLine = body.trim().split("\n")[0] ?? ""
+  const leadingHeading = /^#{1,6}\s/.test(firstLine)
+  const targetMinimum = leadingHeading ? 2 : 3
+  const offset = levels.length ? targetMinimum - Math.min(...levels) : 0
+  const shifted = joinSegments(
+    parts.map((part) =>
+      part.code
+        ? part
+        : {
+            ...part,
+            text: part.text.replace(/^(#{1,6})(?=\s)/gm, (hashes) =>
+              "#".repeat(Math.min(6, Math.max(2, hashes.length + offset))),
+            ),
+          },
+    ),
+  )
+  return leadingHeading ? shifted : `## ${title}\n\n${shifted}`
+}
+
+/**
+ * Rewrites Obsidian wikilinks and embeds.
+ *  - resolveNote(name) → output basename of a published or site-owned note, or null
+ *  - resolveAsset(name) → public asset path (relative to content/), or null
+ * Links to unpublished notes are reduced to their display text so private notes never
+ * appear as broken links. Returns { body, warnings }.
+ */
+export function rewriteLinks(body, { resolveNote, resolveAsset }) {
+  const warnings = []
+  const text = mapProse(body, (prose) =>
+    prose.replace(/(!?)\[\[([^[\]\n]+?)\]\]/g, (whole, bang, inner) => {
+      const separator = inner.includes("\\|") ? "\\|" : "|"
+      const pipe = inner.indexOf(separator)
+      const target = (pipe === -1 ? inner : inner.slice(0, pipe)).trim()
+      const alias = pipe === -1 ? null : inner.slice(pipe + separator.length)
+      const hashIndex = target.search(/[#^]/)
+      const name = hashIndex === -1 ? target : target.slice(0, hashIndex)
+      const anchor = hashIndex === -1 ? "" : target.slice(hashIndex)
+      const tail = alias === null ? "" : `${separator}${alias}`
+
+      if (IMAGE_EXTENSIONS.has(path.extname(name).toLowerCase())) {
+        const asset = resolveAsset(name)
+        if (!asset) throw new Error(`Embedded image not found in vault: ${name}`)
+        return `${bang}[[${asset}${tail}]]`
+      }
+
+      if (name === "") return whole // same-note heading link
+      const resolved = resolveNote(name)
+      if (resolved) return `${bang}[[${resolved}${anchor}${tail}]]`
+      if (bang) {
+        warnings.push(`removed embed of unpublished note "${name}"`)
+        return ""
+      }
+      warnings.push(`unlinked unpublished note "${name}"`)
+      return alias ?? path.basename(name)
+    }),
+  )
+  return { body: text, warnings }
+}
+
+export function deriveMetadata(relativePath, data, config) {
+  const rule = config.categoryRules.find((candidate) =>
+    new RegExp(candidate.pattern).test(relativePath),
+  )
+  const match = rule ? relativePath.match(new RegExp(rule.pattern)) : null
+  const category = data.category ?? rule?.category
+  const subcategory = data.subcategory ?? match?.groups?.subcategory ?? rule?.subcategory
+  const catalogues = [data.catalogues ?? []].flat().filter(Boolean)
+  const tags = data.tags
+    ? [data.tags].flat()
+    : [
+        ...catalogues.map((name) => config.catalogues?.[name]?.tag).filter(Boolean),
+        category && slug(category),
+        subcategory && slug(subcategory),
+      ].filter(Boolean)
+
+  const metadata = {
+    title: data.title ?? path.basename(relativePath, ".md"),
+    author: data.author ?? config.defaultAuthor,
+    category,
+    ...(subcategory ? { subcategory } : {}),
+    ...(catalogues.length ? { catalogues } : {}),
+    tags: [...new Set(tags)],
+  }
+  for (const field of PASSTHROUGH_FIELDS) if (data[field]) metadata[field] = data[field]
+  return metadata
+}
+
+export function outputPathFor(relativePath, metadata, config) {
+  const template = config.outputPaths[metadata.category]
+  if (!template) throw new Error(`No outputPaths entry for category "${metadata.category}"`)
+  const values = {
+    author: metadata.author,
+    subcategory: metadata.subcategory ?? "",
+    file: path.basename(relativePath),
+    title: metadata.title,
+  }
+  return template.replace(/\{(\w+)\}/g, (_, key) => {
+    if (!values[key]) throw new Error(`Missing ${key} for ${relativePath}`)
+    return values[key]
+  })
+}
+
+export function renderAuthorIndex(works, sections) {
+  const blocks = []
+  const list = (items) =>
+    items
+      .toSorted((a, b) => a.title.localeCompare(b.title))
+      .map((work) => `- [[${work.basename}|${work.title}]]`)
+      .join("\n")
+  const details = (summary, items) =>
+    `<details>\n<summary>${summary}</summary>\n\n${list(items)}\n\n</details>`
+
+  for (const section of sections) {
+    const members = works.filter((work) => work.category === section.category)
+    if (!members.length) continue
+    blocks.push(`## ${section.heading}`)
+    if (!section.groupBySubcategory) {
+      blocks.push(details(`Show ${section.label}`, members))
+      continue
+    }
+    const groups = [...new Set(members.map((work) => work.subcategory ?? "Other"))].sort()
+    for (const group of groups) {
+      const lower = section.lowercaseSubcategory
+      const shown =
+        lower === true || (Array.isArray(lower) && lower.includes(group))
+          ? group.toLowerCase()
+          : group
+      blocks.push(`### ${group}`)
+      blocks.push(
+        details(
+          `Show ${shown} ${section.label}`,
+          members.filter((work) => (work.subcategory ?? "Other") === group),
+        ),
+      )
+    }
+  }
+  return blocks.join("\n\n")
+}
+
+export const sha256 = (data) => createHash("sha256").update(data).digest("hex")
+
+// ---------------------------------------------------------------------------
+// Filesystem / git
+// ---------------------------------------------------------------------------
+
+async function walk(root, directory, ignore, output = []) {
+  for (const item of await readdir(directory, { withFileTypes: true })) {
+    const absolute = path.join(directory, item.name)
+    const relative = path.relative(root, absolute).replaceAll(path.sep, "/")
+    if (ignore.some((name) => relative === name || relative.startsWith(`${name}/`))) continue
+    if (item.isDirectory()) await walk(root, absolute, ignore, output)
+    else if (item.isFile()) output.push(relative)
+  }
+  return output
+}
+
+function git(cwd, args) {
+  return execFileSync("git", ["-C", cwd, ...args], { encoding: "utf8" })
+}
+
+function vaultRevision(vault, relativePath) {
+  try {
+    const [commit, date] = git(vault, ["log", "-1", "--format=%H%x09%aI", "--", relativePath])
+      .trim()
+      .split("\t")
+    return commit ? { commit: commit.slice(0, 12), date: date.slice(0, 10) } : null
+  } catch {
+    return null
+  }
+}
+
+function dirtyPaths(vault) {
+  try {
+    return new Set(
+      git(vault, ["status", "--porcelain=v1", "-z", "--untracked-files=all"])
+        .split("\0")
+        .filter(Boolean)
+        .map((entry) => entry.slice(3)),
+    )
+  } catch {
+    return null // not a git checkout
+  }
+}
+
+async function formatMarkdown(text, filepath) {
+  const prettier = await import("prettier")
+  const options = (await prettier.resolveConfig(filepath)) ?? {}
+  return prettier.format(text, { ...options, filepath })
+}
+
+async function readLock(config) {
+  const lockPath = path.join(repositoryRoot, config.lockFile)
+  if (!existsSync(lockPath)) return { files: {}, assets: {}, indexes: {} }
+  return JSON.parse(await readFile(lockPath, "utf8"))
+}
+
+async function removeEmptyParents(file) {
+  let directory = path.dirname(file)
+  while (directory.startsWith(contentRoot) && directory !== contentRoot) {
+    try {
+      await rmdir(directory)
+    } catch {
+      return
+    }
+    directory = path.dirname(directory)
+  }
+}
+
+function indexRegion(text, file) {
+  const start = text.indexOf(INDEX_START)
+  const end = text.indexOf(INDEX_END)
+  if (start === -1 || end === -1 || end < start)
+    throw new Error(`${file} needs ${INDEX_START} and ${INDEX_END} markers`)
+  return { start: start + INDEX_START.length, end }
+}
+
+// ---------------------------------------------------------------------------
+// Commands
+// ---------------------------------------------------------------------------
+
+async function check(config) {
+  const lock = await readLock(config)
+  const problems = []
+  const verify = async (file, expected) => {
+    const absolute = path.join(repositoryRoot, file)
+    if (!existsSync(absolute)) return problems.push(`missing generated file: ${file}`)
+    if (sha256(await readFile(absolute)) !== expected)
+      problems.push(`hand-edited generated file: ${file}`)
+  }
+  for (const [file, entry] of Object.entries(lock.files)) await verify(file, entry.sha256)
+  for (const [file, entry] of Object.entries(lock.assets)) await verify(file, entry.sha256)
+  for (const [file, expected] of Object.entries(lock.indexes)) {
+    const text = await readFile(path.join(repositoryRoot, file), "utf8")
+    const { start, end } = indexRegion(text, file)
+    if (sha256(text.slice(start, end)) !== expected)
+      problems.push(`hand-edited works list in ${file}`)
+  }
+  for (const author of config.managedAuthors ?? []) {
+    const directory = path.join(contentRoot, "authors", author)
+    if (!existsSync(directory)) continue
+    for (const file of await walk(repositoryRoot, directory, [])) {
+      if (file === `content/authors/${author}/index.md`) continue
+      if (!lock.files[file]) problems.push(`file not produced by vault sync: ${file}`)
+    }
+  }
+  if (problems.length) {
+    console.error(problems.map((problem) => `✗ ${problem}`).join("\n"))
+    console.error(
+      "\nPublished works are generated from TheBigVaultOfDnD. Edit the vault note and run `npm run sync:vault`.",
+    )
+    process.exitCode = 1
+    return
+  }
+  console.log(
+    `Vault sync check passed: ${Object.keys(lock.files).length} works, ${Object.keys(lock.assets).length} assets unchanged since generation`,
+  )
+}
+
+async function sync(config, { vault, dryRun, allowDirty }) {
+  if (!existsSync(vault)) throw new Error(`Vault not found: ${vault} (use --vault or VAULT_DIR)`)
+  const lock = await readLock(config)
+  const files = await walk(vault, vault, config.ignoreFolders ?? [])
+  const byBasename = new Map()
+  for (const file of files) {
+    const key = path.basename(file).toLowerCase()
+    byBasename.set(key, [...(byBasename.get(key) ?? []), file])
+  }
+
+  // 1. Collect published notes.
+  const notes = []
+  for (const file of files.filter((candidate) => candidate.endsWith(".md"))) {
+    const markdown = await readFile(path.join(vault, file), "utf8")
+    if (!/^---\r?\n[\s\S]*?^publish:\s*true\s*$/m.test(markdown)) continue
+    const { data, body } = splitFrontmatter(markdown)
+    if (data.publish !== true) continue
+    const metadata = deriveMetadata(file, data, config)
+    const output = `content/${outputPathFor(file, metadata, config)}`
+    notes.push({ source: file, data, body, metadata, output })
+  }
+
+  const errors = []
+  const seenOutputs = new Map()
+  for (const note of notes) {
+    if (!note.metadata.category) errors.push(`${note.source}: no category rule matched`)
+    const previous = seenOutputs.get(note.output)
+    if (previous) errors.push(`${note.source} and ${previous} both publish to ${note.output}`)
+    seenOutputs.set(note.output, note.source)
+  }
+
+  const dirty = dirtyPaths(vault)
+  if (!allowDirty) {
+    if (!dirty) errors.push(`${vault} is not a git checkout; pass --allow-dirty to sync anyway`)
+    else
+      for (const note of notes)
+        if (dirty.has(note.source)) errors.push(`${note.source} has uncommitted changes`)
+  }
+  if (errors.length) throw new Error(errors.join("\n"))
+
+  // 2. Link resolution: published vault notes first, then pages the site already owns.
+  const published = new Map(
+    notes.map((note) => [
+      path.basename(note.source, ".md").toLowerCase(),
+      path.basename(note.output, ".md"),
+    ]),
+  )
+  const generatedOutputs = new Set(notes.map((note) => note.output))
+  const sitePages = new Map(
+    (await walk(repositoryRoot, contentRoot, []))
+      .filter((file) => file.endsWith(".md") && !generatedOutputs.has(file) && !lock.files[file])
+      .flatMap((file) => {
+        const withoutExtension = file.slice("content/".length, -".md".length)
+        return [
+          [withoutExtension.toLowerCase(), withoutExtension],
+          [path.basename(withoutExtension).toLowerCase(), path.basename(withoutExtension)],
+        ]
+      }),
+  )
+  const resolveNote = (name) => {
+    const key = name.replace(/\.md$/i, "").toLowerCase()
+    return published.get(path.basename(key)) ?? sitePages.get(key) ?? null
+  }
+
+  // 3. Render each note.
+  const plannedFiles = {}
+  const plannedAssets = {}
+  const warnings = []
+  for (const note of notes) {
+    const assetDirectory =
+      note.metadata.catalogues?.map((name) => config.catalogues?.[name]?.assets).find(Boolean) ??
+      `assets/${slug(note.metadata.author)}`
+    const resolveAsset = (name) => {
+      const candidates = byBasename.get(path.basename(name).toLowerCase()) ?? []
+      const suffixMatches = candidates.filter((candidate) => candidate.endsWith(name))
+      const pool = suffixMatches.length ? suffixMatches : candidates
+      if (!pool.length) return null
+      // Obsidian prefers the candidate closest to the linking note.
+      const noteDirectory = path.dirname(note.source)
+      const source = pool.toSorted(
+        (a, b) =>
+          path.relative(noteDirectory, a).split("/").length -
+          path.relative(noteDirectory, b).split("/").length,
+      )[0]
+      const publicPath = `${assetDirectory}/${path.basename(source)}`
+      const planned = plannedAssets[`content/${publicPath}`]
+      if (planned && planned.source !== source)
+        throw new Error(
+          `Two different images publish to ${publicPath}: ${planned.source}, ${source}`,
+        )
+      plannedAssets[`content/${publicPath}`] = { source }
+      return publicPath
+    }
+
+    const revision = vaultRevision(vault, note.source)
+    const linked = rewriteLinks(stripComments(note.body), { resolveNote, resolveAsset })
+    warnings.push(...linked.warnings.map((warning) => `${note.source}: ${warning}`))
+    const frontmatter = {
+      ...note.metadata,
+      modified: note.data.modified ?? revision?.date,
+      source_commit: dirty?.has(note.source) ? "uncommitted" : (revision?.commit ?? "unknown"),
+    }
+    if (!frontmatter.modified) delete frontmatter.modified
+    const document = [
+      `---\n${YAML.stringify(frontmatter).trim()}\n---`,
+      `<!-- Generated from TheBigVaultOfDnD: ${note.source}. Edit the vault note, then run npm run sync:vault. -->`,
+      normaliseHeadings(linked.body, note.metadata.title),
+    ].join("\n\n")
+    const absolute = path.join(repositoryRoot, note.output)
+    const formatted = await formatMarkdown(`${document}\n`, absolute)
+    plannedFiles[note.output] = {
+      source: note.source,
+      commit: frontmatter.source_commit,
+      sha256: sha256(formatted),
+      text: formatted,
+      metadata: note.metadata,
+    }
+  }
+  for (const [output, asset] of Object.entries(plannedAssets))
+    asset.sha256 = sha256(await readFile(path.join(vault, asset.source)))
+
+  // 4. Author index works lists.
+  const plannedIndexes = {}
+  for (const author of config.managedAuthors ?? []) {
+    const file = `content/authors/${author}/index.md`
+    const absolute = path.join(repositoryRoot, file)
+    if (!existsSync(absolute)) continue
+    const works = Object.entries(plannedFiles)
+      .filter(
+        ([output, entry]) =>
+          entry.metadata.author === author && output.startsWith("content/authors/"),
+      )
+      .map(([output, entry]) => ({ ...entry.metadata, basename: path.basename(output, ".md") }))
+    const current = await readFile(absolute, "utf8")
+    const { start, end } = indexRegion(current, file)
+    const spliced = `${current.slice(0, start)}\n\n${renderAuthorIndex(works, config.authorIndex)}\n\n${current.slice(end)}`
+    const formatted = await formatMarkdown(spliced, absolute)
+    const region = indexRegion(formatted, file)
+    plannedIndexes[file] = {
+      text: formatted,
+      sha256: sha256(formatted.slice(region.start, region.end)),
+    }
+  }
+
+  // 5. Diff against disk and apply.
+  const actions = []
+  const readIfExists = async (file) =>
+    existsSync(path.join(repositoryRoot, file)) ? readFile(path.join(repositoryRoot, file)) : null
+  for (const [file, entry] of Object.entries(plannedFiles)) {
+    const current = await readIfExists(file)
+    if (current === null) actions.push(["add", file])
+    else if (sha256(current) !== entry.sha256) actions.push(["update", file])
+  }
+  for (const [file, entry] of Object.entries(plannedAssets)) {
+    const current = await readIfExists(file)
+    if (current === null) actions.push(["add", file])
+    else if (sha256(current) !== entry.sha256) actions.push(["update", file])
+  }
+  for (const [file, entry] of Object.entries(plannedIndexes))
+    if ((await readFile(path.join(repositoryRoot, file), "utf8")) !== entry.text)
+      actions.push(["update", file])
+  for (const file of [...Object.keys(lock.files), ...Object.keys(lock.assets)])
+    if (!plannedFiles[file] && !plannedAssets[file] && existsSync(path.join(repositoryRoot, file)))
+      actions.push(["remove", file])
+
+  for (const warning of warnings) console.warn(`! ${warning}`)
+  for (const [action, file] of actions) console.log(`${action.padEnd(6)} ${file}`)
+  console.log(
+    `${notes.length} published notes, ${Object.keys(plannedAssets).length} assets, ${actions.length} change(s)${dryRun ? " (dry run)" : ""}`,
+  )
+  if (dryRun) return
+
+  for (const [action, file] of actions) {
+    const absolute = path.join(repositoryRoot, file)
+    if (action === "remove") {
+      await rm(absolute)
+      await removeEmptyParents(absolute)
+      continue
+    }
+    await mkdir(path.dirname(absolute), { recursive: true })
+    if (plannedAssets[file]) await copyFile(path.join(vault, plannedAssets[file].source), absolute)
+    else await writeFile(absolute, (plannedFiles[file] ?? plannedIndexes[file]).text)
+  }
+
+  const sortedEntries = (object, pick) =>
+    Object.fromEntries(
+      Object.entries(object)
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([key, value]) => [key, pick(value)]),
+    )
+  const nextLock = {
+    note: "Generated by scripts/sync-from-vault.mjs. Do not edit.",
+    files: sortedEntries(plannedFiles, ({ source, commit, sha256 }) => ({
+      source,
+      commit,
+      sha256,
+    })),
+    assets: sortedEntries(plannedAssets, ({ source, sha256 }) => ({ source, sha256 })),
+    indexes: sortedEntries(plannedIndexes, ({ sha256 }) => sha256),
+  }
+  await writeFile(
+    path.join(repositoryRoot, config.lockFile),
+    `${JSON.stringify(nextLock, null, 2)}\n`,
+  )
+}
+
+// ---------------------------------------------------------------------------
+
+async function main(argv) {
+  const config = YAML.parse(
+    await readFile(path.join(repositoryRoot, "vault-sync.config.yaml"), "utf8"),
+  )
+  const flag = (name) => argv.includes(name)
+  const valueOf = (name) => {
+    const index = argv.indexOf(name)
+    return index === -1 ? undefined : argv[index + 1]
+  }
+  if (flag("--check")) return check(config)
+  const vault = path.resolve(
+    repositoryRoot,
+    valueOf("--vault") ?? process.env.VAULT_DIR ?? config.vault,
+  )
+  return sync(config, { vault, dryRun: flag("--dry-run"), allowDirty: flag("--allow-dirty") })
+}
+
+if (process.argv[1] === new URL(import.meta.url).pathname) {
+  main(process.argv.slice(2)).catch((error) => {
+    console.error(error instanceof Error ? error.message : error)
+    process.exitCode = 1
+  })
+}

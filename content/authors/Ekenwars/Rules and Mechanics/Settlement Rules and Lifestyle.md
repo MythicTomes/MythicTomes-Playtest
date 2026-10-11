@@ -9,7 +9,11 @@ tags:
   - hongshan
   - rules-and-mechanics
   - general
+modified: 2026-10-11
+source_commit: 147dc9b6a6ea
 ---
+
+<!-- Generated from TheBigVaultOfDnD: Hongshan/Rules and Mechanics/Settlement Rules and Lifestyle.md. Edit the vault note, then run npm run sync:vault. -->
 
 ## Settlement Rules and Lifestyle
 

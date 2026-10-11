@@ -9,7 +9,11 @@ tags:
   - hongshan
   - subclass
   - wizard
+modified: 2026-10-11
+source_commit: 147dc9b6a6ea
 ---
+
+<!-- Generated from TheBigVaultOfDnD: Homebrew Vault/Subclasses/Wizard/Calligrapher.md. Edit the vault note, then run npm run sync:vault. -->
 
 ## Calligrapher
 

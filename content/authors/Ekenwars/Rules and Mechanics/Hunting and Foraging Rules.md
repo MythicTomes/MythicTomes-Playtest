@@ -9,9 +9,13 @@ tags:
   - hongshan
   - rules-and-mechanics
   - general
+modified: 2026-10-11
+source_commit: 147dc9b6a6ea
 ---
 
-# Hunting and Foraging Rules
+<!-- Generated from TheBigVaultOfDnD: Hongshan/Rules and Mechanics/Hunting and Foraging Rules.md. Edit the vault note, then run npm run sync:vault. -->
+
+## Hunting and Foraging Rules
 
 While in the wilderness and without sufficient rations, characters may attempt to hunt or forage for food.
 

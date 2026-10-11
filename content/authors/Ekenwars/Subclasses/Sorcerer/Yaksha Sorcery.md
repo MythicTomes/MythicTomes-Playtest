@@ -9,20 +9,26 @@ tags:
   - hongshan
   - subclass
   - sorcerer
+modified: 2026-10-11
+source_commit: 147dc9b6a6ea
 ---
+
+<!-- Generated from TheBigVaultOfDnD: Homebrew Vault/Subclasses/Sorcerer/Yaksha Sorcery.md. Edit the vault note, then run npm run sync:vault. -->
+
+## Yaksha Sorcery
 
 ![[assets/ekenwars/hongshan/yaksha_sorcerer-sevenknights_FengYang.png]]
 _Credit: Seven Knights (Netmarble) - Feng Yan_
 
-## Yaksha Bloodline
+### Yaksha Bloodline
 
 Sorcerers of the Yaksha bloodline descend from heroic spirits, ascended gods, and wrathful divine beings. Channeling their lineage, they enter a supernatural battle trance, enhancing their bodies with spiritual power and striking with both steel and sorcery.
 
-### Level 3: Yaksha Armament
+#### Level 3: Yaksha Armament
 
 You gain proficiency with light armor and one martial weapon of your choice. You also learn one Weapon Mastery property of your choice for that weapon.
 
-### Level 3: Yaksha Manifestation
+#### Level 3: Yaksha Manifestation
 
 While your Innate Sorcery is active, you gain the following benefits:
 
@@ -32,11 +38,11 @@ While your Innate Sorcery is active, you gain the following benefits:
 
 You lose these benefits if you are wearing medium or heavy armor, or if you are using a shield.
 
-### Level 3: Yaksha Spells
+#### Level 3: Yaksha Spells
 
 You learn additional spells when you reach certain levels in this class, as shown on the Yaksha Spells table. Each spell counts as a sorcerer spell for you, but it doesn’t count against the number of sorcerer spells you know.
 
-#### Yaksha Spells
+##### Yaksha Spells
 
 | Sorcerer Level | Spells                                                           |
 | -------------- | ---------------------------------------------------------------- |
@@ -45,13 +51,13 @@ You learn additional spells when you reach certain levels in this class, as show
 | 7              | Fire Shield, Freedom of Movement                                 |
 | 9              | Banishing Smite, Hold Monster                                    |
 
-### Level 6: Extra Attack
+#### Level 6: Extra Attack
 
 You can attack twice, instead of once, whenever you take the Attack action on your turn.
 
 In addition, you can replace one of those attacks with the casting of one of your sorcerer cantrips.
 
-### Level 14: Transcendent Armory
+#### Level 14: Transcendent Armory
 
 You gain proficiency with all martial weapons.
 
@@ -59,7 +65,7 @@ At the end of a long rest, you can replace your chosen Weapon Mastery with anoth
 
 In addition, when you deal damage with a weapon attack, you can change the damage type to force or radiant.
 
-### Level 18: Divine Ascension
+#### Level 18: Divine Ascension
 
 While your Innate Sorcery is active, you gain the following additional benefits:
 

@@ -9,13 +9,17 @@ tags:
   - hongshan
   - subclass
   - monk
+modified: 2026-10-11
+source_commit: 147dc9b6a6ea
 ---
+
+<!-- Generated from TheBigVaultOfDnD: Homebrew Vault/Subclasses/Monk/Way of the Bestial Art.md. Edit the vault note, then run npm run sync:vault. -->
 
 ## Way of the Bestial Art
 
 The Way of the Bestial Art calls on the instincts of predatory beasts. Monks who follow this tradition shape their bodies and minds after their spirit animal, turning every movement into a reflection of primal ferocity, resilience, or cunning. Their fighting style is fluid, but always animalistic, allowing them to stalk, pounce, crush, or strike with venomous precision.
 
-#### Level 3: Bestial Art
+### Level 3: Bestial Art
 
 You learn the instincts of the animal you embody. Choose one of the following Bestial Art. While you are trained under a Bestial Art, you gain a skill proficiency based on your choice:
 
@@ -23,7 +27,7 @@ You learn the instincts of the animal you embody. Choose one of the following Be
 - Bear: You gain proficiency in the Athletics skill.
 - Viper: You gain proficiency in the Stealth skill.
 
-#### Level 3: Bestial Style
+### Level 3: Bestial Style
 
 Your Bestial Art allows you to apply a weapon mastery to your unarmed strikes.
 
@@ -35,7 +39,7 @@ When you hit with an unarmed strike, you can apply a weapon mastery effect to th
 
 You can change your bestial art when you finish a long rest.
 
-#### Level 6: Bestial Empowerment
+### Level 6: Bestial Empowerment
 
 You can empower your bestial art. As a bonus action, you can spend 2 ki points to enter a heightened bestial state for 1 minute. The effect depends on your chosen style.
 
@@ -47,7 +51,7 @@ You can empower your bestial art. As a bonus action, you can spend 2 ki points t
 
 This empowerment ends early if you are incapacitated or if you choose to end it (no action required).
 
-#### Level 11: Primal Aspect
+### Level 11: Primal Aspect
 
 Your body and instincts further align with your chosen beast, granting you additional benefits based on your current bestial style.
 
@@ -59,7 +63,7 @@ Your body and instincts further align with your chosen beast, granting you addit
 
 In addition, once per long rest, you can change your bestial style when you finish a short rest.
 
-#### Level 17: Perfected Bestial Art
+### Level 17: Perfected Bestial Art
 
 Your connection to your bestial art is perfected. When you use your Bestial Empowerment feature, you can choose to further enhance it. When you do so, you spend 4 additional ki points. You can use this enhanced empowerment a number of times equal to your proficiency bonus per long rest.
 

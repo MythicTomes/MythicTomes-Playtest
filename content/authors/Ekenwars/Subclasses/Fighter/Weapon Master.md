@@ -9,7 +9,11 @@ tags:
   - hongshan
   - subclass
   - fighter
+modified: 2026-10-11
+source_commit: 147dc9b6a6ea
 ---
+
+<!-- Generated from TheBigVaultOfDnD: Homebrew Vault/Subclasses/Fighter/Weapon Master.md. Edit the vault note, then run npm run sync:vault. -->
 
 ## Weapon Master (Fighter Subclass)
 
