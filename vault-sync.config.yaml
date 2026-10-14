@@ -77,3 +77,6 @@ catalogues:
   Hongshan Playtest:
     tag: hongshan
     assets: assets/ekenwars/hongshan
+  Everfrost:
+    tag: everfrost
+    assets: assets/ekenwars/everfrost

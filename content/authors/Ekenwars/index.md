@@ -46,6 +46,15 @@ Browse public playtest material attributed to [[authors/Ekenwars/index|Ekenwars]
 
 </details>
 
+### Other
+
+<details>
+<summary>Show Other rules and mechanics</summary>
+
+- [[Hunting and Foraging|Hunting and Foraging]]
+
+</details>
+
 ## Species
 
 <details>

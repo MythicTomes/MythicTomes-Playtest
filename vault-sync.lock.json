@@ -21,6 +21,11 @@
       "commit": "147dc9b6a6ea",
       "sha256": "c05454af162e620cf00130e067d1ed799f735e377de4413cb99b4ba83108c75f"
     },
+    "content/authors/Ekenwars/Rules and Mechanics/Hunting and Foraging.md": {
+      "source": "Everfrost - Frostpunk Setting/Rules and Mechanics/Hunting and Foraging.md",
+      "commit": "23e02aa42d8d",
+      "sha256": "3e6a5a5cf5a2df42ca7eff6b52b93b2f12e565b9b6a3b0e9bdcb906893c1e92d"
+    },
     "content/authors/Ekenwars/Rules and Mechanics/Musou Techniques.md": {
       "source": "Hongshan/Rules and Mechanics/Musou Techniques.md",
       "commit": "147dc9b6a6ea",
@@ -271,6 +276,6 @@
     }
   },
   "indexes": {
-    "content/authors/Ekenwars/index.md": "c4faf2af2b50b9fa46fd27c009db974f658f2e85629709893acdbdb944086835"
+    "content/authors/Ekenwars/index.md": "fd40c2046f9ea9022d03e3f5fae8c781acd0f042180c1c28158ff2231e20d87d"
   }
 }
