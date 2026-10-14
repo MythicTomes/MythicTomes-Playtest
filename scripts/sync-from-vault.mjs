@@ -193,7 +193,7 @@ export function categoryFromFolders(folders) {
 }
 
 /** Category of a note kept directly in a setting folder that no rule or property places. */
-export const ROOT_CATEGORY = "Overview"
+export const ROOT_CATEGORY = "General"
 
 export function deriveMetadata(relativePath, data, config) {
   const rule = config.categoryRules?.find((candidate) =>

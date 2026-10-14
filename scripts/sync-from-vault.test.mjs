@@ -164,12 +164,12 @@ test("folders below a setting: category, subcategory, then further levels joined
   ])
 })
 
-test("a note directly in a setting folder falls back to a rule, then to Overview", () => {
+test("a note directly in a setting folder falls back to a rule, then to General", () => {
   const loose = deriveMetadata("Setting A/Loose.md", {}, settingConfig)
-  assert.equal(loose.category, "Overview")
+  assert.equal(loose.category, "General")
   assert.equal(
     outputPathFor("Setting A/Loose.md", loose, settingConfig),
-    "catalogues/AlphaSite/Overview/Loose.md",
+    "catalogues/AlphaSite/General/Loose.md",
   )
   // A categoryRule still wins over the default, so a catalogue note kept at a setting root
   // is still recognised as one.
