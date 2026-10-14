@@ -236,3 +236,104 @@ test("moving a note between setting folders redirects its old URL and keeps its 
     rmSync(temporary, { recursive: true, force: true })
   }
 })
+
+test("a note shared by several catalogues is one vault file published into each", () => {
+  const temporary = mkdtempSync(path.join(tmpdir(), "vault-shared-test-"))
+  const site = path.join(temporary, "site"),
+    vault = path.join(temporary, "vault")
+  const git = (dir, ...args) => execFileSync("git", ["-C", dir, ...args], { encoding: "utf8" })
+  const write = (dir, file, text) => {
+    mkdirSync(path.dirname(path.join(dir, file)), { recursive: true })
+    writeFileSync(path.join(dir, file), text)
+  }
+  const commit = (dir) => {
+    git(dir, "add", ".")
+    git(dir, "commit", "--allow-empty", "-qm", "fixture")
+  }
+  const sync = (...extra) =>
+    execFileSync(
+      process.execPath,
+      [path.join(site, "scripts/sync-from-vault.mjs"), "--vault", vault, ...extra],
+      { encoding: "utf8", stdio: "pipe" },
+    )
+  const read = (file) => readFileSync(path.join(site, file), "utf8")
+  const shared = (catalogues, text) =>
+    `---\npublish: true\ncategory: Rules\ncatalogues: [${catalogues}]\n---\n${text}\n`
+  const only = (catalogue, link) =>
+    `---\npublish: true\ncategory: Rules\ncatalogues: [${catalogue}]\n---\nSee [[Shared Rule]].${link}\n`
+  try {
+    for (const dir of [site, vault]) {
+      mkdirSync(dir)
+      git(dir, "init", "-q")
+      git(dir, "config", "user.name", "Test")
+      git(dir, "config", "user.email", "test@example.com")
+    }
+    write(site, "scripts/placeholder", "")
+    copyFileSync(
+      path.join(root, "scripts/sync-from-vault.mjs"),
+      path.join(site, "scripts/sync-from-vault.mjs"),
+    )
+    symlinkSync(path.join(root, "node_modules"), path.join(site, "node_modules"))
+    write(site, ".gitignore", "node_modules\n")
+    write(
+      site,
+      "vault-sync.config.yaml",
+      "defaultAuthor: Test\nlockFile: vault-sync.lock.json\nignoreFolders: [.git]\ncategoryRules: []\ncatalogues:\n  Alpha:\n    folder: A\n  Beta:\n    folder: B\n",
+    )
+    for (const file of ["index.md", "catalogues/index.md"])
+      write(
+        site,
+        `content/${file}`,
+        "Intro\n\n<!-- vault-sync:catalogues:start -->\n\n<!-- vault-sync:catalogues:end -->\n",
+      )
+    write(vault, "Shared Rule.md", shared("Alpha, Beta", "Shared text one"))
+    write(vault, "Alpha Only.md", only("Alpha", ""))
+    write(vault, "Beta Only.md", only("Beta", ""))
+    commit(vault)
+    const first = sync()
+    commit(site)
+    assert.match(first, /one of 2 catalogue copies of Shared Rule\.md/)
+    for (const folder of ["A", "B"]) {
+      const page = read(`content/catalogues/${folder}/Rules/Shared Rule.md`)
+      assert.match(page, /Shared text one/)
+      assert.match(page, new RegExp(`catalogues:\\n {2}- ${folder === "A" ? "Alpha" : "Beta"}\\n`))
+    }
+
+    // Each page links to the copy in its own catalogue.
+    assert.match(
+      read("content/catalogues/A/Rules/Alpha Only.md"),
+      /\[\[catalogues\/A\/Rules\/Shared Rule\|/,
+    )
+    assert.match(
+      read("content/catalogues/B/Rules/Beta Only.md"),
+      /\[\[catalogues\/B\/Rules\/Shared Rule\|/,
+    )
+
+    // One edit in the vault changes every copy.
+    write(vault, "Shared Rule.md", shared("Alpha, Beta", "Shared text two"))
+    commit(vault)
+    sync()
+    for (const folder of ["A", "B"])
+      assert.match(read(`content/catalogues/${folder}/Rules/Shared Rule.md`), /Shared text two/)
+    commit(site)
+    assert.equal(sync().includes("0 change(s)"), true)
+
+    // Dropping a catalogue removes its copy; the remaining copy takes over the old URL.
+    write(vault, "Shared Rule.md", shared("Alpha", "Shared text two"))
+    commit(vault)
+    sync()
+    assert.equal(existsSync(path.join(site, "content/catalogues/B/Rules/Shared Rule.md")), false)
+    assert.match(
+      read("content/catalogues/A/Rules/Shared Rule.md"),
+      /aliases:\n {2}- catalogues\/B\/Rules\/Shared Rule/,
+    )
+    assert.match(
+      read("content/catalogues/B/Rules/Beta Only.md"),
+      /\[\[catalogues\/A\/Rules\/Shared Rule\|/,
+    )
+    commit(site)
+    assert.match(sync("--check"), /Vault sync check passed/)
+  } finally {
+    rmSync(temporary, { recursive: true, force: true })
+  }
+})

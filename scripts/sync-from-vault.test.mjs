@@ -203,6 +203,18 @@ test("placement problems name the file and the fix", () => {
   )
 })
 
+test("naming a catalogue that is not configured says how to add it", () => {
+  const metadata = deriveMetadata(
+    "Elsewhere/Thing.md",
+    { category: "Rules", catalogues: ["Gamma"] },
+    settingConfig,
+  )
+  assert.throws(
+    () => outputPathFor("Elsewhere/Thing.md", metadata, settingConfig),
+    /Catalogue "Gamma" has no folder in vault-sync\.config\.yaml \(catalogues\.Gamma\.folder\)/,
+  )
+})
+
 test("links to full paths keep the author's text, including inside tables", () => {
   const resolveNote = () => ({ target: "catalogues/A/Rules/Hunting", display: "Hunting" })
   const rewrite = (body) => rewriteLinks(body, { resolveNote, resolveAsset: () => null }).body

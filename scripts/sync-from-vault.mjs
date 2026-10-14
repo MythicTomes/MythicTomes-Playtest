@@ -271,7 +271,11 @@ export function outputPathFor(relativePath, metadata, config) {
   const template = config.outputPaths?.[metadata.category]
   if (!template)
     throw new Error(
-      `${relativePath}: not placed in any catalogue (category "${metadata.category}"). Move it under a setting folder (${Object.keys(config.settings ?? {}).join(", ") || "none configured"}) or add a catalogues property naming a configured catalogue.`,
+      `${relativePath}: not placed in any catalogue (category "${metadata.category}"). Move it under a setting folder (${Object.keys(config.settings ?? {}).join(", ") || "none configured"}) or add a catalogues property naming a configured catalogue.${
+        metadata.catalogues?.[0] && !config.catalogues?.[metadata.catalogues[0]]?.folder
+          ? ` Catalogue "${metadata.catalogues[0]}" has no folder in vault-sync.config.yaml (catalogues.${metadata.catalogues[0]}.folder).`
+          : ""
+      }`,
     )
   const values = {
     author: metadata.author,
@@ -536,18 +540,29 @@ async function sync(config, { vault, dryRun, allowDirty, publishDate }) {
       )
         throw new Error(`${file}: ${key} must contain text`)
     }
-    const metadata = deriveMetadata(file, data, config)
-    const output = `content/${outputPathFor(file, metadata, config)}`
-    if (
-      output.includes("\\") ||
-      path.posix.normalize(output) !== output ||
-      !output.startsWith("content/")
-    )
-      throw new Error(`${file}: unsafe output path`)
-    const existing = lock.files[output]
-    if (existsSync(path.join(repositoryRoot, output)) && !existing)
-      throw new Error(`${file}: output is not owned by vault sync: ${output}`)
-    notes.push({ source: file, data, body, metadata, output })
+    // A note naming several catalogues is shared: the vault keeps one file and each catalogue
+    // gets its own generated copy, so editing the shared note updates every setting using it.
+    // A setting that needs something different keeps its own note instead.
+    const derived = deriveMetadata(file, data, config)
+    const publications =
+      derived.category !== "Catalogue" && (derived.catalogues?.length ?? 0) > 1
+        ? derived.catalogues.map((name) =>
+            deriveMetadata(file, { ...data, catalogues: [name] }, config),
+          )
+        : [derived]
+    for (const metadata of publications) {
+      const output = `content/${outputPathFor(file, metadata, config)}`
+      if (
+        output.includes("\\") ||
+        path.posix.normalize(output) !== output ||
+        !output.startsWith("content/")
+      )
+        throw new Error(`${file}: unsafe output path`)
+      const existing = lock.files[output]
+      if (existsSync(path.join(repositoryRoot, output)) && !existing)
+        throw new Error(`${file}: output is not owned by vault sync: ${output}`)
+      notes.push({ source: file, data, body, metadata, output, copies: publications.length })
+    }
   }
 
   const errors = []
@@ -569,26 +584,31 @@ async function sync(config, { vault, dryRun, allowDirty, publishDate }) {
   if (errors.length) throw new Error(errors.join("\n"))
 
   // 2. Link resolution: published vault notes first, then pages the site already owns.
-  const names = new Set()
+  const names = new Map()
   for (const note of notes) {
     const name = path.basename(note.source, ".md").toLowerCase()
-    if (names.has(name)) throw new Error(`Ambiguous published basename: ${name}`)
-    names.add(name)
+    if (names.has(name) && names.get(name) !== note.source)
+      throw new Error(`Ambiguous published basename: ${name}`)
+    names.set(name, note.source)
   }
   // Links name the page's full path rather than relying on Quartz's shortest-path guess, so
   // they stay correct when notes move between folders or share a file name across catalogues.
-  const published = new Map(
-    notes.map((note) => [
-      path.basename(note.source, ".md").toLowerCase(),
+  // A shared note has one entry per catalogue copy.
+  const published = new Map()
+  for (const note of notes) {
+    const key = path.basename(note.source, ".md").toLowerCase()
+    published.set(key, [
+      ...(published.get(key) ?? []),
       {
+        catalogue: note.metadata.catalogues?.[0],
         target: note.output.slice("content/".length, -".md".length),
         display:
           note.metadata.category === "Catalogue"
             ? note.metadata.title
             : path.basename(note.source, ".md"),
       },
-    ]),
-  )
+    ])
+  }
   const generatedOutputs = new Set(notes.map((note) => note.output))
   const sitePages = new Map(
     (await walk(repositoryRoot, contentRoot, []))
@@ -601,9 +621,12 @@ async function sync(config, { vault, dryRun, allowDirty, publishDate }) {
         ]
       }),
   )
-  const resolveNote = (name) => {
+  // A link prefers the copy in the linking page's own catalogue, else the first copy.
+  const resolveNote = (name, fromCatalogue) => {
     const key = name.replace(/\.md$/i, "").toLowerCase()
-    return published.get(path.basename(key)) ?? sitePages.get(key) ?? null
+    const copies = published.get(path.basename(key))
+    if (copies) return copies.find((copy) => copy.catalogue === fromCatalogue) ?? copies[0]
+    return sitePages.get(key) ?? null
   }
 
   // 3. Render each note.
@@ -632,17 +655,25 @@ async function sync(config, { vault, dryRun, allowDirty, publishDate }) {
     }
 
     const revision = vaultRevision(vault, note.source)
-    const linked = rewriteLinks(stripComments(note.body), { resolveNote, resolveAsset })
+    const linked = rewriteLinks(stripComments(note.body), {
+      resolveNote: (name) => resolveNote(name, note.metadata.catalogues?.[0]),
+      resolveAsset,
+    })
     warnings.push(...linked.warnings.map((warning) => `${note.source}: ${warning}`))
     // Where this note was published before: those URLs redirect. A vault move changes the
     // note's path but not its (unique) file name, so the file name identifies it; an output
     // still produced this run belongs to another page.
     const sameNote = (entry) =>
       path.basename(entry.source).toLowerCase() === path.basename(note.source).toLowerCase()
-    const previous = Object.entries(lock.files).filter(
-      ([output, entry]) =>
-        sameNote(entry) && output !== note.output && !generatedOutputs.has(output),
-    )
+    // Copies of a shared note are the same note: only the first claims an old URL, because
+    // two pages cannot both redirect from one address.
+    const firstCopy = notes.find((candidate) => candidate.source === note.source) === note
+    const previous = firstCopy
+      ? Object.entries(lock.files).filter(
+          ([output, entry]) =>
+            sameNote(entry) && output !== note.output && !generatedOutputs.has(output),
+        )
+      : []
     const own = note.output.slice("content/".length, -".md".length)
     const aliases = [
       ...new Set([
@@ -679,6 +710,7 @@ async function sync(config, { vault, dryRun, allowDirty, publishDate }) {
       current &&
       lock.files[note.output]?.source === note.source &&
       publicFingerprint(current) === publicFingerprint(formatted) &&
+      JSON.stringify(splitFrontmatter(current).data.aliases ?? []) === JSON.stringify(aliases) &&
       (!note.data.modified || splitFrontmatter(current).data.modified === note.data.modified)
     ) {
       formatted = current
@@ -689,6 +721,7 @@ async function sync(config, { vault, dryRun, allowDirty, publishDate }) {
       sha256: sha256(formatted),
       text: formatted,
       metadata: note.metadata,
+      copies: note.copies,
       aliases,
     }
   }
@@ -762,7 +795,12 @@ async function sync(config, { vault, dryRun, allowDirty, publishDate }) {
       actions.push(["remove", file])
 
   for (const warning of warnings) console.warn(`! ${warning}`)
-  for (const [action, file] of actions) console.log(`${action.padEnd(6)} ${file}`)
+  for (const [action, file] of actions) {
+    const copies = plannedFiles[file]?.copies
+    const shared =
+      copies > 1 ? ` (one of ${copies} catalogue copies of ${plannedFiles[file].source})` : ""
+    console.log(`${action.padEnd(6)} ${file}${shared}`)
+  }
   console.log(
     `${notes.length} published notes, ${Object.keys(plannedAssets).length} assets, ${actions.length} change(s)${dryRun ? " (dry run)" : ""}`,
   )
