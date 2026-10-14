@@ -40,3 +40,13 @@ Markdown is the current browser-native format. Keep Markdown in the author’s c
 You retain copyright in your original work. By submitting content, you confirm that you own it or are authorised to submit it, identify any third-party material, and grant MythicTomes a non-exclusive licence to host, render, cache, display, and distribute it through this library. This does not transfer ownership.
 
 Read [LICENSE.md](LICENSE.md) for the full mixed-licence terms.
+
+## Automatic vault publishing
+
+Vault-managed works are generated from committed notes with `publish: true` in TheBigVaultOfDnD. Its private publishing workflow exports notes and referenced images, validates the site, and commits only changed public output to this repository's `main`. Edit those works in the vault, not their generated site copies.
+
+Private-only edits do not create site commits. Removing the publishing property removes the generated page on the next successful sync. Published catalogue pages automatically appear in the managed navigation regions on the homepage and Catalogues index.
+
+`npm run sync:vault -- --vault /path/to/vault` runs the same exporter locally. `npm run check:portal` validates, tests, builds Quartz, and writes `public/deployment.json` with the checked-out site commit. That marker is a build artifact, never a committed source file.
+
+Wrangler runs the full validation/build command before deployment, so a successful standalone Quartz build cannot bypass validation. The Cloudflare dashboard may retain its existing `npx quartz build` command; setting it to the same validation command is supported but repeats work. Keep the deploy command `npx wrangler deploy`.

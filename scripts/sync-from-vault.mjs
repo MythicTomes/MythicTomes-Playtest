@@ -21,6 +21,8 @@ import YAML from "yaml"
 const IMAGE_EXTENSIONS = new Set([".gif", ".jpeg", ".jpg", ".png", ".svg", ".webp"])
 const INDEX_START = "<!-- vault-sync:works:start -->"
 const INDEX_END = "<!-- vault-sync:works:end -->"
+const CATALOGUE_START = "<!-- vault-sync:catalogues:start -->"
+const CATALOGUE_END = "<!-- vault-sync:catalogues:end -->"
 const PASSTHROUGH_FIELDS = ["description", "version", "licence", "copyright"]
 
 const repositoryRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), "..")
@@ -41,7 +43,7 @@ export function splitFrontmatter(markdown) {
   const text = markdown.replace(/\r\n/g, "\n")
   if (!text.startsWith("---\n")) return { data: {}, body: text }
   const end = text.indexOf("\n---", 4)
-  if (end === -1) return { data: {}, body: text }
+  if (end === -1) throw new Error("Unclosed YAML frontmatter")
   const after = text.indexOf("\n", end + 4)
   return {
     data: YAML.parse(text.slice(4, end)) ?? {},
@@ -316,8 +318,12 @@ async function firstPublished(output, fingerprint) {
 }
 
 function localDate(date = new Date()) {
-  const pad = (value) => String(value).padStart(2, "0")
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Jakarta",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(date)
 }
 
 function dirtyPaths(vault) {
@@ -358,11 +364,13 @@ async function removeEmptyParents(file) {
 }
 
 function indexRegion(text, file) {
-  const start = text.indexOf(INDEX_START)
-  const end = text.indexOf(INDEX_END)
+  const opening = text.includes(CATALOGUE_START) ? CATALOGUE_START : INDEX_START
+  const closing = opening === CATALOGUE_START ? CATALOGUE_END : INDEX_END
+  const start = text.indexOf(opening)
+  const end = text.indexOf(closing)
   if (start === -1 || end === -1 || end < start)
     throw new Error(`${file} needs ${INDEX_START} and ${INDEX_END} markers`)
-  return { start: start + INDEX_START.length, end }
+  return { start: start + opening.length, end }
 }
 
 // ---------------------------------------------------------------------------
@@ -421,11 +429,34 @@ async function sync(config, { vault, dryRun, allowDirty, publishDate }) {
   const notes = []
   for (const file of files.filter((candidate) => candidate.endsWith(".md"))) {
     const markdown = await readFile(path.join(vault, file), "utf8")
-    if (!/^---\r?\n[\s\S]*?^publish:\s*true\s*$/m.test(markdown)) continue
     const { data, body } = splitFrontmatter(markdown)
+    if (data === null || typeof data !== "object" || Array.isArray(data))
+      throw new Error(`${file}: frontmatter must be a mapping`)
+    if (data.publish !== undefined && typeof data.publish !== "boolean")
+      throw new Error(`${file}: publish must be a YAML boolean`)
     if (data.publish !== true) continue
+    for (const key of ["title", "author", "category", "subcategory", ...PASSTHROUGH_FIELDS]) {
+      if (data[key] !== undefined && typeof data[key] !== "string")
+        throw new Error(`${file}: ${key} must be text`)
+    }
+    for (const key of ["catalogues", "tags"]) {
+      if (
+        data[key] !== undefined &&
+        ![data[key]].flat().every((value) => typeof value === "string")
+      )
+        throw new Error(`${file}: ${key} must contain text`)
+    }
     const metadata = deriveMetadata(file, data, config)
     const output = `content/${outputPathFor(file, metadata, config)}`
+    if (
+      output.includes("\\") ||
+      path.posix.normalize(output) !== output ||
+      !output.startsWith("content/")
+    )
+      throw new Error(`${file}: unsafe output path`)
+    const existing = lock.files[output]
+    if (existsSync(path.join(repositoryRoot, output)) && !existing)
+      throw new Error(`${file}: output is not owned by vault sync: ${output}`)
     notes.push({ source: file, data, body, metadata, output })
   }
 
@@ -448,6 +479,12 @@ async function sync(config, { vault, dryRun, allowDirty, publishDate }) {
   if (errors.length) throw new Error(errors.join("\n"))
 
   // 2. Link resolution: published vault notes first, then pages the site already owns.
+  const names = new Set()
+  for (const note of notes) {
+    const name = path.basename(note.source, ".md").toLowerCase()
+    if (names.has(name)) throw new Error(`Ambiguous published basename: ${name}`)
+    names.add(name)
+  }
   const published = new Map(
     notes.map((note) => [
       path.basename(note.source, ".md").toLowerCase(),
@@ -484,13 +521,8 @@ async function sync(config, { vault, dryRun, allowDirty, publishDate }) {
       const suffixMatches = candidates.filter((candidate) => candidate.endsWith(name))
       const pool = suffixMatches.length ? suffixMatches : candidates
       if (!pool.length) return null
-      // Obsidian prefers the candidate closest to the linking note.
-      const noteDirectory = path.dirname(note.source)
-      const source = pool.toSorted(
-        (a, b) =>
-          path.relative(noteDirectory, a).split("/").length -
-          path.relative(noteDirectory, b).split("/").length,
-      )[0]
+      if (pool.length !== 1) throw new Error(`Ambiguous image reference: ${name}`)
+      const source = pool[0]
       const publicPath = `${assetDirectory}/${path.basename(source)}`
       const planned = plannedAssets[`content/${publicPath}`]
       if (planned && planned.source !== source)
@@ -516,13 +548,19 @@ async function sync(config, { vault, dryRun, allowDirty, publishDate }) {
     const absolute = path.join(repositoryRoot, note.output)
     const undated = await formatMarkdown(`${document}\n`, absolute)
     const modified = note.data.modified ?? (await publishedDate(note.output, undated, publishDate))
-    const formatted = undated.replace(
-      /\nsource_commit: /,
-      `\nmodified: ${modified}\nsource_commit: `,
-    )
+    let formatted = undated.replace(/\nsource_commit: /, `\nmodified: ${modified}\nsource_commit: `)
+    const current = existsSync(absolute) ? await readFile(absolute, "utf8") : null
+    if (
+      current &&
+      lock.files[note.output]?.source === note.source &&
+      publicFingerprint(current) === publicFingerprint(formatted) &&
+      (!note.data.modified || splitFrontmatter(current).data.modified === note.data.modified)
+    ) {
+      formatted = current
+    }
     plannedFiles[note.output] = {
       source: note.source,
-      commit: frontmatter.source_commit,
+      commit: splitFrontmatter(formatted).data.source_commit,
       sha256: sha256(formatted),
       text: formatted,
       metadata: note.metadata,
@@ -552,6 +590,28 @@ async function sync(config, { vault, dryRun, allowDirty, publishDate }) {
       text: formatted,
       sha256: sha256(formatted.slice(region.start, region.end)),
     }
+  }
+
+  // Catalogue navigation is derived from published catalogue pages.
+  const catalogueLinks = Object.entries(plannedFiles)
+    .filter(([, entry]) => entry.metadata.category === "Catalogue")
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([file, entry]) => {
+      const presentation = config.catalogueNavigation?.[entry.metadata.title] ?? {}
+      const title = presentation.label ?? entry.metadata.title
+      return `- **[[${file.slice("content/".length, -3)}|${title}]]**.${presentation.description ? ` ${presentation.description}` : ""}`
+    })
+    .join("\n")
+  for (const file of ["content/index.md", "content/catalogues/index.md"]) {
+    const current = await readFile(path.join(repositoryRoot, file), "utf8")
+    if (!current.includes(CATALOGUE_START)) throw new Error(`${file}: missing catalogue markers`)
+    const region = indexRegion(current, file)
+    const text = await formatMarkdown(
+      `${current.slice(0, region.start)}\n\n${catalogueLinks}\n\n${current.slice(region.end)}`,
+      path.join(repositoryRoot, file),
+    )
+    const next = indexRegion(text, file)
+    plannedIndexes[file] = { text, sha256: sha256(text.slice(next.start, next.end)) }
   }
 
   // 5. Diff against disk and apply.

@@ -7,8 +7,8 @@ tags:
   - hongshan
   - catalogue
   - playtest
-modified: 2026-10-11
-source_commit: 147dc9b6a6ea
+modified: 2026-10-15
+source_commit: f5780b220916
 ---
 
 <!-- Generated from TheBigVaultOfDnD: Homebrew Vault/Hongshan Playtest Catalogue.md. Edit the vault note, then run npm run sync:vault. -->
@@ -79,7 +79,7 @@ Catalogue inclusion indicates that the rules text is ready for testing. Embedded
 | Rule                                                                       | Description                                                          |
 | -------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
 | [[Fame and Reputation\|Fame and Reputation]] | Track favorable and hostile reputations by character, party, place, and faction.             |
-| [[Hunting and Foraging Rules\|Hunting and Foraging Rules]] | Resolve wilderness food gathering with a single Survival check and meaningful complications.                       |
+| [[Hunting and Foraging Rules (Hongshan)\|Hunting and Foraging Rules]] | Resolve wilderness food gathering with a single Survival check and meaningful complications.                       |
 | [[Hongshan Weapons\|Hongshan Weapon Expansion]] | Add eleven weapons, three weapon properties, and three masteries designed for Musou Techniques.               |
 | [[Musou Techniques\|Musou Techniques]] | Exchange a Weapon Mastery choice for limited-use martial techniques that affect multiple targets. |
 | [[Settlement Rules and Lifestyle\|Settlement Rules and Lifestyle]] | Price lodging by settlement lifestyle and turn comfort, services, and rest into meaningful adventuring choices.          |

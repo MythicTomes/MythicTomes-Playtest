@@ -29,7 +29,7 @@ Browse public playtest material attributed to [[authors/Ekenwars/index|Ekenwars]
 <summary>Show general rules and mechanics</summary>
 
 - [[Fame and Reputation|Fame and Reputation]]
-- [[Hunting and Foraging Rules|Hunting and Foraging Rules]]
+- [[Hunting and Foraging Rules (Hongshan)|Hunting and Foraging Rules (Hongshan)]]
 - [[Settlement Rules and Lifestyle|Settlement Rules and Lifestyle]]
 - [[Survival Gear|Survival Gear]]
 - [[Weather and Encounters|Weather and Encounters]]
@@ -51,7 +51,7 @@ Browse public playtest material attributed to [[authors/Ekenwars/index|Ekenwars]
 <details>
 <summary>Show Other rules and mechanics</summary>
 
-- [[Hunting and Foraging|Hunting and Foraging]]
+- [[Hunting and Foraging (Everfrost)|Hunting and Foraging (Everfrost)]]
 
 </details>
 

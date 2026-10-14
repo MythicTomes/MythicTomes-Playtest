@@ -13,7 +13,12 @@ Author profiles identify the creator of each work and the terms that apply to it
 
 Curated list of Homebrew, compiled according to theme or setting
 
-- [[Hongshan Playtest]] - A Chinese, Wuxia inspired setting. Rules and content for Martial combat and Musou/Horde style encounters.
+<!-- vault-sync:catalogues:start -->
+
+- **[[catalogues/Everfrost Catalogue|Everfrost]]**. A collection of Everfrost setting material.
+- **[[catalogues/Hongshan Playtest|Hongshan - Legend of the Red Mountain]]**. A Chinese, Wuxia-inspired setting.
+
+<!-- vault-sync:catalogues:end -->
 
 ## Updates
 

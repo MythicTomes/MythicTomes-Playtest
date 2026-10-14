@@ -80,3 +80,12 @@ catalogues:
   Everfrost:
     tag: everfrost
     assets: assets/ekenwars/everfrost
+
+# Presentation overrides for generated catalogue navigation.
+catalogueNavigation:
+  Hongshan Playtest:
+    label: Hongshan - Legend of the Red Mountain
+    description: A Chinese, Wuxia-inspired setting.
+  Everfrost Catalogue:
+    label: Everfrost
+    description: A collection of Everfrost setting material.

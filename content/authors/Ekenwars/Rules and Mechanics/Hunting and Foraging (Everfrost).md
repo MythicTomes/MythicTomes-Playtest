@@ -1,5 +1,5 @@
 ---
-title: Hunting and Foraging
+title: Hunting and Foraging (Everfrost)
 author: Ekenwars
 category: Rules and Mechanics
 catalogues:
@@ -7,11 +7,11 @@ catalogues:
 tags:
   - everfrost
   - rules-and-mechanics
-modified: 2026-10-14
-source_commit: 23e02aa42d8d
+modified: 2026-10-15
+source_commit: f5780b220916
 ---
 
-<!-- Generated from TheBigVaultOfDnD: Everfrost - Frostpunk Setting/Rules and Mechanics/Hunting and Foraging.md. Edit the vault note, then run npm run sync:vault. -->
+<!-- Generated from TheBigVaultOfDnD: Everfrost - Frostpunk Setting/Rules and Mechanics/Hunting and Foraging (Everfrost).md. Edit the vault note, then run npm run sync:vault. -->
 
 ## Hunting and Foraging
 

@@ -1,5 +1,5 @@
 ---
-title: Hunting and Foraging Rules
+title: Hunting and Foraging Rules (Hongshan)
 author: Ekenwars
 category: Rules and Mechanics
 subcategory: General
@@ -9,11 +9,11 @@ tags:
   - hongshan
   - rules-and-mechanics
   - general
-modified: 2026-10-11
-source_commit: 147dc9b6a6ea
+modified: 2026-10-15
+source_commit: f5780b220916
 ---
 
-<!-- Generated from TheBigVaultOfDnD: Hongshan/Rules and Mechanics/Hunting and Foraging Rules.md. Edit the vault note, then run npm run sync:vault. -->
+<!-- Generated from TheBigVaultOfDnD: Hongshan/Rules and Mechanics/Hunting and Foraging Rules (Hongshan).md. Edit the vault note, then run npm run sync:vault. -->
 
 ## Hunting and Foraging Rules
 

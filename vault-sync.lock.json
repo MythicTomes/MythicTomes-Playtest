@@ -16,15 +16,15 @@
       "commit": "147dc9b6a6ea",
       "sha256": "4082344aa21d9bc35fa76b7fdf5190e14b7297dedbe10a3720142b5757de31e0"
     },
-    "content/authors/Ekenwars/Rules and Mechanics/Hunting and Foraging Rules.md": {
-      "source": "Hongshan/Rules and Mechanics/Hunting and Foraging Rules.md",
-      "commit": "147dc9b6a6ea",
-      "sha256": "c05454af162e620cf00130e067d1ed799f735e377de4413cb99b4ba83108c75f"
+    "content/authors/Ekenwars/Rules and Mechanics/Hunting and Foraging (Everfrost).md": {
+      "source": "Everfrost - Frostpunk Setting/Rules and Mechanics/Hunting and Foraging (Everfrost).md",
+      "commit": "f5780b220916",
+      "sha256": "ada06dc38b4f3da359f7ea66e3aec6102b8b8e7411dbedeb1d1915c43cb2ca0f"
     },
-    "content/authors/Ekenwars/Rules and Mechanics/Hunting and Foraging.md": {
-      "source": "Everfrost - Frostpunk Setting/Rules and Mechanics/Hunting and Foraging.md",
-      "commit": "23e02aa42d8d",
-      "sha256": "99e78f70aceea1915f18cd5f868e8c1a294974ea84ad8a6dd038be5e928a4419"
+    "content/authors/Ekenwars/Rules and Mechanics/Hunting and Foraging Rules (Hongshan).md": {
+      "source": "Hongshan/Rules and Mechanics/Hunting and Foraging Rules (Hongshan).md",
+      "commit": "f5780b220916",
+      "sha256": "f8231c52f96a7afd628df4e9824ac134b44238545d52297cc366b02b17fda023"
     },
     "content/authors/Ekenwars/Rules and Mechanics/Musou Techniques.md": {
       "source": "Hongshan/Rules and Mechanics/Musou Techniques.md",
@@ -192,14 +192,14 @@
       "sha256": "8c47d8432bb06ce5ac2092e5820a9263cd37113469f1e2f63dd7948a3c25df56"
     },
     "content/catalogues/Everfrost Catalogue.md": {
-      "source": "Everfrost - Frostpunk Setting/Session Notes/Everfrost Catalogue.md",
-      "commit": "64f6b0134672",
-      "sha256": "7b8d4831765958f9d8beaeb7f94fdf307fd2c076314c9e04ecee115a623e7433"
+      "source": "Everfrost - Frostpunk Setting/Everfrost Catalogue.md",
+      "commit": "f5780b220916",
+      "sha256": "57d9a2a3532bb2414f329a1a6a7ffb502e8a847aead8adbbdeaa12dc550be8cf"
     },
     "content/catalogues/Hongshan Playtest.md": {
       "source": "Homebrew Vault/Hongshan Playtest Catalogue.md",
-      "commit": "147dc9b6a6ea",
-      "sha256": "8ba2a0bbae6eaa2cf1cb0f6ce5a9415fe46eeea0dd6c94ec5a21557d738f9bc8"
+      "commit": "f5780b220916",
+      "sha256": "bc896af096ebbc5e882afeb05015469e907b4ac2d35757e4335b5d239a5f5ec3"
     }
   },
   "assets": {
@@ -281,6 +281,8 @@
     }
   },
   "indexes": {
-    "content/authors/Ekenwars/index.md": "fd40c2046f9ea9022d03e3f5fae8c781acd0f042180c1c28158ff2231e20d87d"
+    "content/authors/Ekenwars/index.md": "c7a10cea9411901a168179d42bf7d1692f2d49fccf6716d81e13d1539b725b80",
+    "content/catalogues/index.md": "20eb91ad3a7b3f23104a35228fab5f555354a374ab4c3f9185e2ba8764373d52",
+    "content/index.md": "20eb91ad3a7b3f23104a35228fab5f555354a374ab4c3f9185e2ba8764373d52"
   }
 }

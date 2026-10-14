@@ -2,7 +2,10 @@
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "mythictomes-playtest",
   "compatibility_date": "2026-10-15",
+  "build": {
+    "command": "npx quartz plugin install && npm run check:portal",
+  },
   "assets": {
-    "directory": "./public"
-  }
+    "directory": "./public",
+  },
 }
