@@ -142,12 +142,46 @@ test("a catalogue note becomes its Overview, found by property or title", () => 
   )
 })
 
-test("placement problems name the file and the fix", () => {
+test("folders below a setting: category, subcategory, then further levels joined with ' - '", () => {
+  const place = (file) => {
+    const metadata = deriveMetadata(file, {}, settingConfig)
+    return [metadata.category, metadata.subcategory, outputPathFor(file, metadata, settingConfig)]
+  }
+  assert.deepEqual(place("Setting A/Rules/Thing.md"), [
+    "Rules",
+    undefined,
+    "catalogues/AlphaSite/Rules/Thing.md",
+  ])
+  assert.deepEqual(place("Setting A/Classes/Monk/Thing.md"), [
+    "Classes",
+    "Monk",
+    "catalogues/AlphaSite/Classes/Monk/Thing.md",
+  ])
+  assert.deepEqual(place("Setting A/Classes/Monk/Warlord/Path/Thing.md"), [
+    "Classes",
+    "Monk - Warlord - Path",
+    "catalogues/AlphaSite/Classes/Monk - Warlord - Path/Thing.md",
+  ])
+})
+
+test("a note directly in a setting folder falls back to a rule, then to Overview", () => {
   const loose = deriveMetadata("Setting A/Loose.md", {}, settingConfig)
-  assert.throws(
-    () => outputPathFor("Setting A/Loose.md", loose, settingConfig),
-    /Setting A\/Loose\.md: no category/,
+  assert.equal(loose.category, "Overview")
+  assert.equal(
+    outputPathFor("Setting A/Loose.md", loose, settingConfig),
+    "catalogues/AlphaSite/Overview/Loose.md",
   )
+  // A categoryRule still wins over the default, so a catalogue note kept at a setting root
+  // is still recognised as one.
+  const catalogue = deriveMetadata("Setting A/Alpha Catalogue.md", {}, settingConfig)
+  assert.equal(catalogue.category, "Catalogue")
+  assert.equal(
+    outputPathFor("Setting A/Alpha Catalogue.md", catalogue, settingConfig),
+    "catalogues/AlphaSite/Overview.md",
+  )
+})
+
+test("placement problems name the file and the fix", () => {
   const homeless = deriveMetadata("Elsewhere/Thing.md", { category: "Rules" }, settingConfig)
   assert.throws(
     () => outputPathFor("Elsewhere/Thing.md", homeless, settingConfig),
@@ -161,6 +195,11 @@ test("placement problems name the file and the fix", () => {
         settingConfig,
       ),
     /cannot be used as a folder name/,
+  )
+  const uncategorised = { catalogues: ["Alpha"], title: "Thing" }
+  assert.throws(
+    () => outputPathFor("Elsewhere/Thing.md", uncategorised, settingConfig),
+    /Elsewhere\/Thing\.md: no category/,
   )
 })
 

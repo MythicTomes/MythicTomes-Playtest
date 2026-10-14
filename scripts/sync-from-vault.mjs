@@ -181,19 +181,19 @@ export function locateInSetting(relativePath, settings = {}) {
 
 /**
  * Maps the folders below a setting root to a category and optional subcategory, so a new
- * folder becomes a new category without any configuration. A note directly in the setting
- * root yields no category (its `category` property or a categoryRule must supply one).
+ * folder becomes a new category without any configuration: the first folder is the
+ * category, the second the subcategory, and any further folders are joined onto the
+ * subcategory with " - ". A note directly in the setting root has no folder category (it
+ * falls back to a categoryRule, then to ROOT_CATEGORY).
  */
 export function categoryFromFolders(folders) {
-  // TODO(human): decide how folder depth maps to category and subcategory. A note at
-  // <Setting>/Rules and Mechanics/x.md has folders ["Rules and Mechanics"]; one at
-  // <Setting>/Subclasses/Monk/x.md has ["Subclasses", "Monk"]. Decide what happens for a
-  // note directly in the root (folders = []) and for deeper nesting (3+ folders).
-  const [category, subcategory, ...deeper] = folders
-  if (deeper.length)
-    throw new Error(`Folders nested deeper than category/subcategory: ${folders.join("/")}`)
+  const [category, ...remaining] = folders
+  const subcategory = remaining.length ? remaining.join(" - ") : undefined
   return { category, subcategory }
 }
+
+/** Category of a note kept directly in a setting folder that no rule or property places. */
+export const ROOT_CATEGORY = "Overview"
 
 export function deriveMetadata(relativePath, data, config) {
   const rule = config.categoryRules?.find((candidate) =>
@@ -202,7 +202,11 @@ export function deriveMetadata(relativePath, data, config) {
   const match = rule ? relativePath.match(new RegExp(rule.pattern)) : null
   const location = locateInSetting(relativePath, config.settings)
   const fromFolders = location ? categoryFromFolders(location.folders) : {}
-  const category = data.category ?? fromFolders.category ?? rule?.category
+  const category =
+    data.category ??
+    fromFolders.category ??
+    rule?.category ??
+    (location ? ROOT_CATEGORY : undefined)
   const subcategory =
     data.subcategory ?? fromFolders.subcategory ?? match?.groups?.subcategory ?? rule?.subcategory
   const catalogues = [data.catalogues ?? location?.catalogue ?? []].flat().filter(Boolean)
