@@ -111,14 +111,14 @@ plugins:
     enabled: true
     options:
       showFolderCount: false
-      showSubfolders: false
+      showSubfolders: true
   - source: "@quartz-community/tag-page"
     enabled: true
   - source: "@quartz-community/explorer"
     enabled: true
     options:
       folderDefaultState: collapsed
-      folderClickBehavior: link
+      folderClickBehavior: collapse
       useSavedState: true
     layout:
       position: left

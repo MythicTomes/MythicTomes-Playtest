@@ -3,16 +3,17 @@
 # TheBigVaultOfDnD is the single source of truth. A vault note is published when its
 # frontmatter contains `publish: true`. Everything below derives the public metadata and
 # output path so that vault notes only need to state what cannot be derived.
+#
+# Published layout: content/catalogues/<catalogue folder>/<category>/[<subcategory>/]<note>.md
+# The sidebar is that directory tree, so a new vault folder becomes a new section on the next
+# sync with no configuration. Moving a note redirects its old URL (see `aliases` in the lock).
 
 # Vault checkout to read from. Override with --vault <path> or VAULT_DIR.
 vault: ../TheBigVaultOfDnD
 
-# Author used when a note does not set `author`. Authors listed in `managedAuthors` have
-# their folders under content/authors/ owned by this script: hand-added or hand-edited
-# files there fail `npm run sync:check`.
+# Author recorded in each page's metadata when a note does not set `author`. Pages are no
+# longer grouped by author, but the property is kept so that grouping can return.
 defaultAuthor: Ekenwars
-managedAuthors:
-  - Ekenwars
 
 lockFile: vault-sync.lock.json
 
@@ -25,9 +26,17 @@ ignoreFolders:
   - Session Transcriptions
   - MythicTomes Intelligence
 
-# First matching rule (by vault-relative path) supplies category and, optionally,
-# subcategory. A named group `subcategory` in the pattern is used as the subcategory.
-# Frontmatter `category` / `subcategory` always win.
+# Vault folders that each hold one setting: vault root folder -> catalogue name (a key of
+# `catalogues` below). Every note inside belongs to that catalogue; the folder directly below
+# the root is its category and a second folder is its subcategory. A `catalogues`, `category`
+# or `subcategory` property in a note always wins over its folder.
+settings:
+  Hongshan: Hongshan Playtest
+  Everfrost - Frostpunk Setting: Everfrost
+
+# Fallback for notes outside a setting folder. First matching rule (by vault-relative path)
+# supplies category and, optionally, subcategory. A named group `subcategory` in the pattern
+# is used as the subcategory. Folder-derived values and frontmatter win over these.
 categoryRules:
   - pattern: "Catalogue\\.md$"
     category: Catalogue
@@ -41,44 +50,25 @@ categoryRules:
   - pattern: "/Magic Items/"
     category: Magic Item
 
-# Output path under content/, by category. Placeholders: {author}, {subcategory},
-# {file} (vault basename) and {title}.
-outputPaths:
-  Catalogue: catalogues/{title}.md
-  Species: authors/{author}/Species/{file}
-  Subclass: authors/{author}/Subclasses/{subcategory}/{file}
-  Rules and Mechanics: authors/{author}/Rules and Mechanics/{file}
-  Magic Item: authors/{author}/Magic Items/{file}
+# Site folder name for a category when it differs from the category itself.
+categoryFolders:
+  Subclass: Subclasses
+  Magic Item: Magic Items
 
-# Headings and order used for the generated works list in each managed author's index.md.
-authorIndex:
-  - category: Magic Item
-    heading: Magic Items
-    label: magic items
-    groupBySubcategory: true
-    lowercaseSubcategory: true
-  - category: Rules and Mechanics
-    heading: Rules and Mechanics
-    label: rules and mechanics
-    groupBySubcategory: true
-    lowercaseSubcategory: [General]
-  - category: Species
-    heading: Species
-    label: species
-    groupBySubcategory: false
-  - category: Subclass
-    heading: Subclasses
-    label: subclasses
-    groupBySubcategory: true
+# Categories whose subcategory is metadata only and does not add a folder.
+flatCategories:
+  - Species
 
-# Per-catalogue tag added to every member, and the folder (under content/) that receives
-# images embedded by members. Notes outside any catalogue use assets/<author slug>/.
+# Per catalogue: the tag added to every member, the site folder under content/catalogues/,
+# and the folder (under content/) that receives images embedded by members.
 catalogues:
   Hongshan Playtest:
     tag: hongshan
+    folder: Hongshan
     assets: assets/ekenwars/hongshan
   Everfrost:
     tag: everfrost
+    folder: Everfrost
     assets: assets/ekenwars/everfrost
 
 # Presentation overrides for generated catalogue navigation.
