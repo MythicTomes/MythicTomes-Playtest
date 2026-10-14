@@ -1,11 +1,10 @@
 # MythicTomes
 
-MythicTomes is a public library of 5E-compatible homebrew. Read material in your browser, browse it by author or catalogue, and use the page navigation to move through related rules.
+MythicTomes is a public library of 5E-compatible homebrew. Read material in your browser, browse it by catalogue (setting), and use the page navigation to move through related rules.
 
 ## Finding material
 
-- `content/authors/` contains one profile for each author. It states the author’s default copyright and licence terms.
-- `content/catalogues/` contains curated collections. A catalogue links to works; it does not duplicate them.
+- `content/catalogues/<Catalogue>/<Category>/` contains each catalogue's pages, grouped by category (and subcategory where one applies). Each catalogue's own overview is `Overview`. The sidebar shows this directory tree; folders expand and collapse, and pages are the only links.
 - `content/playtests/<Author>/` contains each author’s canonical files, organised by type such as `Classes`, `Subclasses`, `Races`, `Magic Items`, and `Rules and Mechanics`.
 - `content/assets/` contains approved images and other browser-safe supporting files.
 
@@ -44,6 +43,10 @@ Read [LICENSE.md](LICENSE.md) for the full mixed-licence terms.
 ## Automatic vault publishing
 
 Vault-managed works are generated from committed notes with `publish: true` in TheBigVaultOfDnD. Its private publishing workflow exports notes and referenced images, validates the site, and commits only changed public output to this repository's `main`. Edit those works in the vault, not their generated site copies.
+
+Where a page lands is derived from the vault's folders, so reorganising the vault needs no site configuration. `settings` in `vault-sync.config.yaml` maps a vault root folder to a catalogue; the folder below it is the page's category and a further folder its subcategory (`Hongshan/Rules and Mechanics/Note.md` publishes to `catalogues/Hongshan/Rules and Mechanics/Note.md`). A `catalogues`, `category` or `subcategory` property in a note overrides its folder, and `categoryRules` cover notes kept outside a setting folder. A note that cannot be placed fails the export with a message naming the file and the fix.
+
+Moving a note to another folder moves its page and redirects the old URL (recorded as `aliases` and in `vault-sync.lock.json`), so shared links keep working. Wikilinks never depend on folders: the exporter resolves them by note name, which must be unique among published notes, and writes the full page path.
 
 Private-only edits do not create site commits. Removing the publishing property removes the generated page on the next successful sync. Published catalogue pages automatically appear in the managed navigation regions on the homepage and Catalogues index.
 

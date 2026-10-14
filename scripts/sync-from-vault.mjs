@@ -127,7 +127,7 @@ export function normaliseHeadings(body, title) {
 export function rewriteLinks(body, { resolveNote, resolveAsset }) {
   const warnings = []
   const text = mapProse(body, (prose) =>
-    prose.replace(/(!?)\[\[([^[\]\n]+?)\]\]/g, (whole, bang, inner) => {
+    prose.replace(/(!?)\[\[([^[\]\n]+?)\]\]/g, (whole, bang, inner, offset, source) => {
       const separator = inner.includes("\\|") ? "\\|" : "|"
       const pipe = inner.indexOf(separator)
       const target = (pipe === -1 ? inner : inner.slice(0, pipe)).trim()
@@ -144,8 +144,18 @@ export function rewriteLinks(body, { resolveNote, resolveAsset }) {
       }
 
       if (name === "") return whole // same-note heading link
+      // resolveNote returns a target slug, or { target, display } to keep the author's link
+      // text when the target is a full path (an unaliased link would otherwise show the file name).
       const resolved = resolveNote(name)
-      if (resolved) return `${bang}[[${resolved}${anchor}${tail}]]`
+      if (resolved) {
+        const { target, display } =
+          typeof resolved === "string" ? { target: resolved, display: null } : resolved
+        if (alias !== null || bang || anchor || !display)
+          return `${bang}[[${target}${anchor}${tail}]]`
+        const lineStart = source.lastIndexOf("\n", offset) + 1
+        const pipe = source.slice(lineStart).trimStart().startsWith("|") ? "\\|" : "|"
+        return `[[${target}${pipe}${display}]]`
+      }
       if (bang) {
         warnings.push(`removed embed of unpublished note "${name}"`)
         return ""
@@ -157,14 +167,45 @@ export function rewriteLinks(body, { resolveNote, resolveAsset }) {
   return { body: text, warnings }
 }
 
+/**
+ * A note inside a configured setting folder (`settings`: vault root folder → catalogue name)
+ * belongs to that catalogue. `folders` are the directories between the setting root and the
+ * note, which is where its category comes from. Returns null for notes outside every setting.
+ */
+export function locateInSetting(relativePath, settings = {}) {
+  const [root, ...rest] = relativePath.split("/")
+  const catalogue = settings[root]
+  if (!catalogue || rest.length === 0) return null
+  return { catalogue, folders: rest.slice(0, -1) }
+}
+
+/**
+ * Maps the folders below a setting root to a category and optional subcategory, so a new
+ * folder becomes a new category without any configuration. A note directly in the setting
+ * root yields no category (its `category` property or a categoryRule must supply one).
+ */
+export function categoryFromFolders(folders) {
+  // TODO(human): decide how folder depth maps to category and subcategory. A note at
+  // <Setting>/Rules and Mechanics/x.md has folders ["Rules and Mechanics"]; one at
+  // <Setting>/Subclasses/Monk/x.md has ["Subclasses", "Monk"]. Decide what happens for a
+  // note directly in the root (folders = []) and for deeper nesting (3+ folders).
+  const [category, subcategory, ...deeper] = folders
+  if (deeper.length)
+    throw new Error(`Folders nested deeper than category/subcategory: ${folders.join("/")}`)
+  return { category, subcategory }
+}
+
 export function deriveMetadata(relativePath, data, config) {
-  const rule = config.categoryRules.find((candidate) =>
+  const rule = config.categoryRules?.find((candidate) =>
     new RegExp(candidate.pattern).test(relativePath),
   )
   const match = rule ? relativePath.match(new RegExp(rule.pattern)) : null
-  const category = data.category ?? rule?.category
-  const subcategory = data.subcategory ?? match?.groups?.subcategory ?? rule?.subcategory
-  const catalogues = [data.catalogues ?? []].flat().filter(Boolean)
+  const location = locateInSetting(relativePath, config.settings)
+  const fromFolders = location ? categoryFromFolders(location.folders) : {}
+  const category = data.category ?? fromFolders.category ?? rule?.category
+  const subcategory =
+    data.subcategory ?? fromFolders.subcategory ?? match?.groups?.subcategory ?? rule?.subcategory
+  const catalogues = [data.catalogues ?? location?.catalogue ?? []].flat().filter(Boolean)
   const tags = data.tags
     ? [data.tags].flat()
     : [
@@ -185,9 +226,49 @@ export function deriveMetadata(relativePath, data, config) {
   return metadata
 }
 
+const safeSegment = (value, relativePath) => {
+  if (!value || /[\\/]/.test(value) || value === "." || value === "..")
+    throw new Error(`${relativePath}: "${value}" cannot be used as a folder name`)
+  return value
+}
+
+/**
+ * Catalogue layout: content/catalogues/<folder>/<category>/[<subcategory>/]<file>, with the
+ * catalogue's own note at content/catalogues/<folder>/Overview.md (a leaf rather than an
+ * index, so the explorer can still reach it when folders only expand). Applies when the
+ * note's catalogue configures a `folder`; other notes use their category's outputPaths template.
+ */
+export function catalogueOutputPath(relativePath, metadata, config) {
+  const name =
+    metadata.category === "Catalogue"
+      ? (metadata.catalogues?.[0] ?? metadata.title)
+      : metadata.catalogues?.[0]
+  const folder = config.catalogues?.[name]?.folder
+  if (!folder) return null
+  const base = ["catalogues", safeSegment(folder, relativePath)]
+  if (metadata.category === "Catalogue") return [...base, "Overview.md"].join("/")
+  if (!metadata.category)
+    throw new Error(
+      `${relativePath}: no category. Set a category property, or keep the note in a category folder under its setting folder (${Object.keys(config.settings ?? {}).join(", ") || "none configured"}).`,
+    )
+  const category = config.categoryFolders?.[metadata.category] ?? metadata.category
+  const flat = (config.flatCategories ?? []).includes(metadata.category)
+  return [
+    ...base,
+    safeSegment(category, relativePath),
+    ...(metadata.subcategory && !flat ? [safeSegment(metadata.subcategory, relativePath)] : []),
+    path.basename(relativePath),
+  ].join("/")
+}
+
 export function outputPathFor(relativePath, metadata, config) {
-  const template = config.outputPaths[metadata.category]
-  if (!template) throw new Error(`No outputPaths entry for category "${metadata.category}"`)
+  const inCatalogue = catalogueOutputPath(relativePath, metadata, config)
+  if (inCatalogue) return inCatalogue
+  const template = config.outputPaths?.[metadata.category]
+  if (!template)
+    throw new Error(
+      `${relativePath}: not placed in any catalogue (category "${metadata.category}"). Move it under a setting folder (${Object.keys(config.settings ?? {}).join(", ") || "none configured"}) or add a catalogues property naming a configured catalogue.`,
+    )
   const values = {
     author: metadata.author,
     subcategory: metadata.subcategory ?? "",
@@ -241,11 +322,13 @@ export const sha256 = (data) => createHash("sha256").update(data).digest("hex")
 
 /**
  * What a reader sees on a page: everything except bookkeeping lines (date, source commit,
- * generation notice). Two pages with the same fingerprint are the same publication.
+ * generation notice, redirect aliases). Two pages with the same fingerprint are the same
+ * publication, so moving a note to another folder does not change its date.
  */
 export function publicFingerprint(markdown) {
   return markdown
     .replace(/\r\n/g, "\n")
+    .replace(/^aliases:\n(?:[ \t]+- .*\n)+/m, "")
     .split("\n")
     .filter(
       (line) =>
@@ -290,14 +373,17 @@ function vaultRevision(vault, relativePath) {
  * otherwise the page's existing date (or, for pages first published by hand, the date of
  * the site commit that last changed them).
  */
-async function publishedDate(output, rendered, publishDate) {
-  const absolute = path.join(repositoryRoot, output)
-  if (!existsSync(absolute)) return publishDate
-  const current = await readFile(absolute, "utf8")
+async function publishedDate(output, rendered, publishDate, previousOutputs = []) {
+  // A moved note has no file at its new path yet: compare with where it used to be.
+  const location = [output, ...previousOutputs].find((file) =>
+    existsSync(path.join(repositoryRoot, file)),
+  )
+  if (!location) return publishDate
+  const current = await readFile(path.join(repositoryRoot, location), "utf8")
   if (publicFingerprint(current) !== publicFingerprint(rendered)) return publishDate
   const existing = current.match(/^modified: (\S+)$/m)?.[1]
   if (existing) return existing
-  return (await firstPublished(output, publicFingerprint(rendered))) ?? publishDate
+  return (await firstPublished(location, publicFingerprint(rendered))) ?? publishDate
 }
 
 /** Date of the oldest commit in the unbroken run of history where the page read the same. */
@@ -485,10 +571,18 @@ async function sync(config, { vault, dryRun, allowDirty, publishDate }) {
     if (names.has(name)) throw new Error(`Ambiguous published basename: ${name}`)
     names.add(name)
   }
+  // Links name the page's full path rather than relying on Quartz's shortest-path guess, so
+  // they stay correct when notes move between folders or share a file name across catalogues.
   const published = new Map(
     notes.map((note) => [
       path.basename(note.source, ".md").toLowerCase(),
-      path.basename(note.output, ".md"),
+      {
+        target: note.output.slice("content/".length, -".md".length),
+        display:
+          note.metadata.category === "Catalogue"
+            ? note.metadata.title
+            : path.basename(note.source, ".md"),
+      },
     ]),
   )
   const generatedOutputs = new Set(notes.map((note) => note.output))
@@ -536,8 +630,28 @@ async function sync(config, { vault, dryRun, allowDirty, publishDate }) {
     const revision = vaultRevision(vault, note.source)
     const linked = rewriteLinks(stripComments(note.body), { resolveNote, resolveAsset })
     warnings.push(...linked.warnings.map((warning) => `${note.source}: ${warning}`))
+    // Where this note was published before: those URLs redirect. A vault move changes the
+    // note's path but not its (unique) file name, so the file name identifies it; an output
+    // still produced this run belongs to another page.
+    const sameNote = (entry) =>
+      path.basename(entry.source).toLowerCase() === path.basename(note.source).toLowerCase()
+    const previous = Object.entries(lock.files).filter(
+      ([output, entry]) =>
+        sameNote(entry) && output !== note.output && !generatedOutputs.has(output),
+    )
+    const own = note.output.slice("content/".length, -".md".length)
+    const aliases = [
+      ...new Set([
+        ...previous.flatMap(([output, entry]) => [
+          output.slice("content/".length, -".md".length),
+          ...(entry.aliases ?? []),
+        ]),
+        ...(lock.files[note.output]?.aliases ?? []),
+      ]),
+    ].filter((alias) => alias !== own)
     const frontmatter = {
       ...note.metadata,
+      ...(aliases.length ? { aliases } : {}),
       source_commit: dirty?.has(note.source) ? "uncommitted" : (revision?.commit ?? "unknown"),
     }
     const document = [
@@ -547,7 +661,14 @@ async function sync(config, { vault, dryRun, allowDirty, publishDate }) {
     ].join("\n\n")
     const absolute = path.join(repositoryRoot, note.output)
     const undated = await formatMarkdown(`${document}\n`, absolute)
-    const modified = note.data.modified ?? (await publishedDate(note.output, undated, publishDate))
+    const modified =
+      note.data.modified ??
+      (await publishedDate(
+        note.output,
+        undated,
+        publishDate,
+        previous.map(([output]) => output),
+      ))
     let formatted = undated.replace(/\nsource_commit: /, `\nmodified: ${modified}\nsource_commit: `)
     const current = existsSync(absolute) ? await readFile(absolute, "utf8") : null
     if (
@@ -564,6 +685,7 @@ async function sync(config, { vault, dryRun, allowDirty, publishDate }) {
       sha256: sha256(formatted),
       text: formatted,
       metadata: note.metadata,
+      aliases,
     }
   }
   for (const [output, asset] of Object.entries(plannedAssets))
@@ -662,17 +784,21 @@ async function sync(config, { vault, dryRun, allowDirty, publishDate }) {
     )
   const nextLock = {
     note: "Generated by scripts/sync-from-vault.mjs. Do not edit.",
-    files: sortedEntries(plannedFiles, ({ source, commit, sha256 }) => ({
+    files: sortedEntries(plannedFiles, ({ source, commit, sha256, aliases }) => ({
       source,
       commit,
       sha256,
+      ...(aliases.length ? { aliases } : {}),
     })),
     assets: sortedEntries(plannedAssets, ({ source, sha256 }) => ({ source, sha256 })),
     indexes: sortedEntries(plannedIndexes, ({ sha256 }) => sha256),
   }
+  // Formatted like everything else in the repository: Prettier keeps short arrays (the
+  // redirect aliases) on one line, which JSON.stringify would not.
+  const lockPath = path.join(repositoryRoot, config.lockFile)
   await writeFile(
-    path.join(repositoryRoot, config.lockFile),
-    `${JSON.stringify(nextLock, null, 2)}\n`,
+    lockPath,
+    await formatMarkdown(`${JSON.stringify(nextLock, null, 2)}\n`, lockPath),
   )
 }
 

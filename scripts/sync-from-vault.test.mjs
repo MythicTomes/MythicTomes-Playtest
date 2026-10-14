@@ -55,6 +55,137 @@ test("frontmatter values override derived ones", () => {
   assert.deepEqual(metadata.tags, ["custom"])
 })
 
+const settingConfig = {
+  defaultAuthor: "Ekenwars",
+  settings: { "Setting A": "Alpha" },
+  categoryRules: [
+    { pattern: "Catalogue\\.md$", category: "Catalogue" },
+    { pattern: "^Homebrew Vault/Races/", category: "Species", subcategory: "Legacy Species" },
+    { pattern: "^Homebrew Vault/Subclasses/(?<subcategory>[^/]+)/", category: "Subclass" },
+  ],
+  categoryFolders: { Subclass: "Subclasses" },
+  flatCategories: ["Species"],
+  catalogues: {
+    Alpha: { tag: "alpha", folder: "AlphaSite" },
+    Beta: { tag: "beta", folder: "Beta" },
+  },
+}
+
+test("a note's catalogue and category come from its setting folder", () => {
+  const metadata = deriveMetadata("Setting A/Brand New Folder/Thing.md", {}, settingConfig)
+  assert.equal(metadata.category, "Brand New Folder")
+  assert.deepEqual(metadata.catalogues, ["Alpha"])
+  assert.deepEqual(metadata.tags, ["alpha", "brand-new-folder"])
+  assert.equal(
+    outputPathFor("Setting A/Brand New Folder/Thing.md", metadata, settingConfig),
+    "catalogues/AlphaSite/Brand New Folder/Thing.md",
+  )
+  const nested = deriveMetadata("Setting A/Classes/Monk/Thing.md", {}, settingConfig)
+  assert.equal(nested.subcategory, "Monk")
+  assert.equal(
+    outputPathFor("Setting A/Classes/Monk/Thing.md", nested, settingConfig),
+    "catalogues/AlphaSite/Classes/Monk/Thing.md",
+  )
+})
+
+test("properties beat the setting folder and legacy rules fill the gaps", () => {
+  const moved = deriveMetadata(
+    "Setting A/Rules/Thing.md",
+    { catalogues: ["Beta"], category: "Lore" },
+    settingConfig,
+  )
+  assert.deepEqual([moved.category, moved.catalogues], ["Lore", ["Beta"]])
+  assert.equal(
+    outputPathFor("Setting A/Rules/Thing.md", moved, settingConfig),
+    "catalogues/Beta/Lore/Thing.md",
+  )
+
+  const legacy = deriveMetadata(
+    "Homebrew Vault/Subclasses/Monk/Way.md",
+    { catalogues: ["Beta"] },
+    settingConfig,
+  )
+  assert.equal(
+    outputPathFor("Homebrew Vault/Subclasses/Monk/Way.md", legacy, settingConfig),
+    "catalogues/Beta/Subclasses/Monk/Way.md",
+  )
+})
+
+test("flat categories keep their subcategory out of the path", () => {
+  const species = deriveMetadata(
+    "Homebrew Vault/Races/Ratfolk.md",
+    { catalogues: "Beta" },
+    settingConfig,
+  )
+  assert.equal(species.subcategory, "Legacy Species")
+  assert.equal(
+    outputPathFor("Homebrew Vault/Races/Ratfolk.md", species, settingConfig),
+    "catalogues/Beta/Species/Ratfolk.md",
+  )
+})
+
+test("a catalogue note becomes its Overview, found by property or title", () => {
+  const byProperty = deriveMetadata(
+    "Setting A/Alpha Catalogue.md",
+    { catalogues: ["Alpha"] },
+    settingConfig,
+  )
+  assert.equal(byProperty.category, "Catalogue")
+  assert.equal(
+    outputPathFor("Setting A/Alpha Catalogue.md", byProperty, settingConfig),
+    "catalogues/AlphaSite/Overview.md",
+  )
+  const byTitle = deriveMetadata("Elsewhere/Beta Catalogue.md", { title: "Beta" }, settingConfig)
+  assert.equal(
+    outputPathFor("Elsewhere/Beta Catalogue.md", byTitle, settingConfig),
+    "catalogues/Beta/Overview.md",
+  )
+})
+
+test("placement problems name the file and the fix", () => {
+  const loose = deriveMetadata("Setting A/Loose.md", {}, settingConfig)
+  assert.throws(
+    () => outputPathFor("Setting A/Loose.md", loose, settingConfig),
+    /Setting A\/Loose\.md: no category/,
+  )
+  const homeless = deriveMetadata("Elsewhere/Thing.md", { category: "Rules" }, settingConfig)
+  assert.throws(
+    () => outputPathFor("Elsewhere/Thing.md", homeless, settingConfig),
+    /Elsewhere\/Thing\.md: not placed in any catalogue.*Setting A/,
+  )
+  assert.throws(
+    () =>
+      outputPathFor(
+        "Setting A/x/Thing.md",
+        { category: "..", catalogues: ["Alpha"] },
+        settingConfig,
+      ),
+    /cannot be used as a folder name/,
+  )
+})
+
+test("links to full paths keep the author's text, including inside tables", () => {
+  const resolveNote = () => ({ target: "catalogues/A/Rules/Hunting", display: "Hunting" })
+  const rewrite = (body) => rewriteLinks(body, { resolveNote, resolveAsset: () => null }).body
+  assert.equal(rewrite("See [[Hunting]]."), "See [[catalogues/A/Rules/Hunting|Hunting]].")
+  assert.equal(
+    rewrite("See [[Hunting|the rules]]."),
+    "See [[catalogues/A/Rules/Hunting|the rules]].",
+  )
+  assert.equal(rewrite("See [[Hunting#Gear]]."), "See [[catalogues/A/Rules/Hunting#Gear]].")
+  assert.equal(rewrite("| [[Hunting]] | x |"), "| [[catalogues/A/Rules/Hunting\\|Hunting]] | x |")
+  assert.equal(rewrite("![[Hunting]]"), "![[catalogues/A/Rules/Hunting]]")
+})
+
+test("redirect aliases are not part of what readers see", () => {
+  const page = "---\ntitle: A\naliases:\n  - old/path\n  - older/path\ntags:\n  - x\n---\nBody"
+  assert.equal(
+    publicFingerprint(page),
+    publicFingerprint(page.replace(/aliases:\n(  - .*\n)+/, "")),
+  )
+  assert.notEqual(publicFingerprint(page), publicFingerprint(page.replace("Body", "Changed")))
+})
+
 test("splits frontmatter and tolerates CRLF", () => {
   const { data, body } = splitFrontmatter("---\r\npublish: true\r\n---\r\n\r\nBody\r\n")
   assert.equal(data.publish, true)

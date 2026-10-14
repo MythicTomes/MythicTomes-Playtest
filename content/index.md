@@ -3,12 +3,6 @@ title: MythicTomes
 description: A public library of 5E-compatible homebrew.
 ---
 
-## Authors
-
-Author profiles identify the creator of each work and the terms that apply to it.
-
-- [[authors/Ekenwars/index|Ekenwars]]
-
 ## Catalogues
 
 Curated list of Homebrew, compiled according to theme or setting
