@@ -24,7 +24,7 @@
     "content/authors/Ekenwars/Rules and Mechanics/Hunting and Foraging.md": {
       "source": "Everfrost - Frostpunk Setting/Rules and Mechanics/Hunting and Foraging.md",
       "commit": "23e02aa42d8d",
-      "sha256": "3e6a5a5cf5a2df42ca7eff6b52b93b2f12e565b9b6a3b0e9bdcb906893c1e92d"
+      "sha256": "99e78f70aceea1915f18cd5f868e8c1a294974ea84ad8a6dd038be5e928a4419"
     },
     "content/authors/Ekenwars/Rules and Mechanics/Musou Techniques.md": {
       "source": "Hongshan/Rules and Mechanics/Musou Techniques.md",
@@ -190,6 +190,11 @@
       "source": "Homebrew Vault/Subclasses/Wizard/Calligrapher.md",
       "commit": "147dc9b6a6ea",
       "sha256": "8c47d8432bb06ce5ac2092e5820a9263cd37113469f1e2f63dd7948a3c25df56"
+    },
+    "content/catalogues/Everfrost Catalogue.md": {
+      "source": "Everfrost - Frostpunk Setting/Session Notes/Everfrost Catalogue.md",
+      "commit": "64f6b0134672",
+      "sha256": "7b8d4831765958f9d8beaeb7f94fdf307fd2c076314c9e04ecee115a623e7433"
     },
     "content/catalogues/Hongshan Playtest.md": {
       "source": "Homebrew Vault/Hongshan Playtest Catalogue.md",

@@ -5,6 +5,7 @@ category: Rules and Mechanics
 catalogues:
   - Everfrost
 tags:
+  - everfrost
   - rules-and-mechanics
 modified: 2026-10-14
 source_commit: 23e02aa42d8d
